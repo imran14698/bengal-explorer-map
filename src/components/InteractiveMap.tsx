@@ -169,30 +169,23 @@ const InteractiveMap = ({ onDivisionSelect, selectedDivision }: InteractiveMapPr
                   className="transition-colors duration-200"
                 />
               ))}
+              {(() => {
+                const pos = labelPositions[division.id];
+                if (!pos) return null;
+                return (
+                  <text
+                    x={pos.x}
+                    y={pos.y}
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    className="pointer-events-none select-none font-body"
+                    style={{ fontSize: "10px", fontWeight: 700, fill: "white", textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}
+                  >
+                    {division.name}
+                  </text>
+                );
+              })()}
             </motion.g>
-          );
-        })}
-
-        {/* Division labels */}
-        {divisions.map((division) => {
-          const pos = labelPositions[division.id];
-          if (!pos) return null;
-          const isHovered = hoveredDivision === division.id;
-
-          return (
-            <motion.text
-              key={`label-${division.id}`}
-              x={pos.x}
-              y={pos.y}
-              textAnchor="middle"
-              dominantBaseline="central"
-              className="pointer-events-none select-none font-body"
-              style={{ fontSize: "9px", fontWeight: 600, fill: "hsl(var(--primary-foreground))" }}
-              animate={{ y: isHovered ? pos.y - 10 : pos.y }}
-              transition={{ type: "spring", stiffness: 300, damping: 22 }}
-            >
-              {division.name}
-            </motion.text>
           );
         })}
       </svg>
