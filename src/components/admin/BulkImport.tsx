@@ -6,13 +6,13 @@ import { Upload, FileSpreadsheet, CheckCircle2 } from "lucide-react";
 import * as XLSX from "xlsx";
 
 interface Division {
-  id: string;
+  id: number;
   name: string;
   slug: string;
 }
 
 interface Category {
-  id: string;
+  id: number;
   name: string;
 }
 
@@ -37,13 +37,13 @@ const BulkImport = () => {
   }, []);
 
   const findId = (
-    list: { id: string; name: string }[],
+    list: { id: number; name: string }[],
     value: string
-  ): string | null => {
+  ): number | null => {
     const lower = value?.toString().trim().toLowerCase();
     if (!lower) return null;
     const match = list.find(
-      (item) => item.name.toLowerCase() === lower || item.id === lower
+      (item) => item.name.toLowerCase() === lower || item.id.toString() === lower
     );
     return match?.id ?? null;
   };
@@ -67,13 +67,13 @@ const BulkImport = () => {
         return;
       }
 
-      const records: { division_id: string; category_id: string; info: string }[] = [];
+      const records: { division_id: number; category_id: number; content: string }[] = [];
       let failed = 0;
 
       for (const row of rows) {
         const divisionValue = row["division"] || row["Division"] || row["division_name"] || "";
         const categoryValue = row["category"] || row["Category"] || row["category_name"] || "";
-        const infoValue = row["info"] || row["Info"] || row["information"] || row["Information"] || "";
+        const infoValue = row["info"] || row["Info"] || row["information"] || row["Information"] || row["content"] || row["Content"] || "";
 
         const divisionId = findId(divisions, divisionValue) ||
           findId(
@@ -86,7 +86,7 @@ const BulkImport = () => {
           records.push({
             division_id: divisionId,
             category_id: categoryId,
-            info: infoValue.toString().trim(),
+            content: infoValue.toString().trim(),
           });
         } else {
           failed++;
