@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import CategoriesCrud from "@/components/admin/CategoriesCrud";
 import DivisionInfoForm from "@/components/admin/DivisionInfoForm";
 import BulkImport from "@/components/admin/BulkImport";
+import BlogEditor from "@/components/admin/BlogEditor";
 
 const Admin = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
@@ -62,6 +63,7 @@ const Admin = () => {
             <TabsTrigger value="categories">Categories</TabsTrigger>
             <TabsTrigger value="division-info">Division Info</TabsTrigger>
             <TabsTrigger value="bulk-import">Bulk Import</TabsTrigger>
+            <TabsTrigger value="blog">Blog</TabsTrigger>
           </TabsList>
 
           <TabsContent value="categories">
@@ -72,6 +74,9 @@ const Admin = () => {
           </TabsContent>
           <TabsContent value="bulk-import">
             <BulkImport />
+          </TabsContent>
+          <TabsContent value="blog">
+            <BlogEditor />
           </TabsContent>
         </Tabs>
       </main>
