@@ -106,14 +106,14 @@ const divisions: Division[] = [
 
 // Approximate label positions (center of each division)
 const labelPositions: Record<string, { x: number; y: number }> = {
-  mymensingh: { x: 488, y: 160 },
-  sylhet: { x: 590, y: 175 },
-  rangpur: { x: 380, y: 70 },
-  rajshahi: { x: 380, y: 185 },
-  khulna: { x: 390, y: 310 },
-  dhaka: { x: 475, y: 260 },
-  chattogram: { x: 580, y: 370 },
-  barishal: { x: 480, y: 370 },
+  rangpur: { x: 372, y: 67 },
+  mymensingh: { x: 488, y: 154 },
+  sylhet: { x: 590, y: 176 },
+  rajshahi: { x: 366, y: 180 },
+  dhaka: { x: 475, y: 245 },
+  chattogram: { x: 581, y: 356 },
+  khulna: { x: 394, y: 314 },
+  barishal: { x: 482, y: 357 },
 };
 
 interface InteractiveMapProps {
@@ -169,30 +169,23 @@ const InteractiveMap = ({ onDivisionSelect, selectedDivision }: InteractiveMapPr
                   className="transition-colors duration-200"
                 />
               ))}
+              {(() => {
+                const pos = labelPositions[division.id];
+                if (!pos) return null;
+                return (
+                  <text
+                    x={pos.x}
+                    y={pos.y}
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    className="pointer-events-none select-none font-body"
+                    style={{ fontSize: "10px", fontWeight: 700, fill: "white", textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}
+                  >
+                    {division.name}
+                  </text>
+                );
+              })()}
             </motion.g>
-          );
-        })}
-
-        {/* Division labels */}
-        {divisions.map((division) => {
-          const pos = labelPositions[division.id];
-          if (!pos) return null;
-          const isHovered = hoveredDivision === division.id;
-
-          return (
-            <motion.text
-              key={`label-${division.id}`}
-              x={pos.x}
-              y={pos.y}
-              textAnchor="middle"
-              dominantBaseline="central"
-              className="pointer-events-none select-none font-body"
-              style={{ fontSize: "9px", fontWeight: 600, fill: "hsl(var(--primary-foreground))" }}
-              animate={{ y: isHovered ? pos.y - 10 : pos.y }}
-              transition={{ type: "spring", stiffness: 300, damping: 22 }}
-            >
-              {division.name}
-            </motion.text>
           );
         })}
       </svg>
