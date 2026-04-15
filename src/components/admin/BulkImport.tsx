@@ -111,9 +111,12 @@ const BulkImport = () => {
         }
       } else {
         setResult({ success: 0, failed });
+        const detail = skippedDetails.length > 0
+          ? `Issues: ${[...new Set(skippedDetails)].slice(0, 3).join("; ")}`
+          : "Check that columns match: division, category, info";
         toast({
           title: "No valid records",
-          description: "Check that columns match: division, category, info",
+          description: detail,
           variant: "destructive",
         });
       }
