@@ -141,14 +141,22 @@ const BulkImport = () => {
           className="hidden"
           id="bulk-upload"
         />
-        <Button
-          onClick={() => fileRef.current?.click()}
-          disabled={importing}
-          variant="outline"
-        >
-          <Upload className="mr-2 h-4 w-4" />
-          {importing ? "Importing..." : "Choose File"}
-        </Button>
+        <div className="flex items-center justify-center gap-3">
+          <Button
+            onClick={() => fileRef.current?.click()}
+            disabled={importing}
+            variant="outline"
+          >
+            <Upload className="mr-2 h-4 w-4" />
+            {importing ? "Importing..." : "Choose File"}
+          </Button>
+          <a href="/sample-bulk-import.xlsx" download>
+            <Button variant="ghost" size="sm" type="button">
+              <FileSpreadsheet className="mr-2 h-4 w-4" />
+              Download Sample
+            </Button>
+          </a>
+        </div>
       </div>
 
       {result && (
