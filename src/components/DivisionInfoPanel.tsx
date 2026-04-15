@@ -66,7 +66,7 @@ const DivisionInfoPanel = ({ divisionId, onClose }: DivisionInfoPanelProps) => {
         (rows || []).forEach((row: any) => {
           const catName = row.categories?.name || "Other";
           if (!grouped[catName]) grouped[catName] = [];
-          grouped[catName].push(row.info);
+          grouped[catName].push(row.content);
         });
 
         const result: CategoryInfo[] = Object.entries(grouped).map(
