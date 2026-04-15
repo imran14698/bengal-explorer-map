@@ -69,6 +69,7 @@ const BulkImport = () => {
 
       const records: { division_id: number; category_id: number; content: string }[] = [];
       let failed = 0;
+      const skippedDetails: string[] = [];
 
       for (const row of rows) {
         const divisionValue = row["division"] || row["Division"] || row["division_name"] || "";
@@ -90,6 +91,11 @@ const BulkImport = () => {
           });
         } else {
           failed++;
+          const reasons: string[] = [];
+          if (!divisionId) reasons.push(`division "${divisionValue}" not found`);
+          if (!categoryId) reasons.push(`category "${categoryValue}" not found`);
+          if (!infoValue.toString().trim()) reasons.push("empty info");
+          skippedDetails.push(reasons.join(", "));
         }
       }
 
