@@ -104,7 +104,6 @@ const divisions: Division[] = [
   },
 ];
 
-// Approximate label positions (center of each division)
 const labelPositions: Record<string, { x: number; y: number }> = {
   rangpur: { x: 372, y: 67 },
   mymensingh: { x: 488, y: 154 },
@@ -128,7 +127,7 @@ const InteractiveMap = ({ onDivisionSelect, selectedDivision }: InteractiveMapPr
     <div className="flex items-center justify-center p-4">
       <svg
         viewBox="270 -10 430 530"
-        className="w-full max-w-2xl"
+        className="w-full max-w-2xl drop-shadow-2xl"
         xmlns="http://www.w3.org/2000/svg"
       >
         {divisions.map((division) => {
@@ -143,8 +142,8 @@ const InteractiveMap = ({ onDivisionSelect, selectedDivision }: InteractiveMapPr
               animate={{
                 y: isHovered ? -10 : 0,
                 filter: isHovered
-                  ? "drop-shadow(0 10px 14px rgba(0,0,0,0.3))"
-                  : "drop-shadow(0 1px 2px rgba(0,0,0,0.08))",
+                  ? "drop-shadow(0 12px 20px rgba(0,0,0,0.35))"
+                  : "drop-shadow(0 2px 4px rgba(0,0,0,0.1))",
               }}
               transition={{ type: "spring", stiffness: 300, damping: 22 }}
               onMouseEnter={() => setHoveredDivision(division.id)}
@@ -179,7 +178,12 @@ const InteractiveMap = ({ onDivisionSelect, selectedDivision }: InteractiveMapPr
                     textAnchor="middle"
                     dominantBaseline="central"
                     className="pointer-events-none select-none font-body"
-                    style={{ fontSize: "10px", fontWeight: 700, fill: "#1a2e1a", textShadow: "0 0 4px rgba(255,255,255,0.8)" }}
+                    style={{
+                      fontSize: "10px",
+                      fontWeight: 700,
+                      fill: "hsl(var(--foreground))",
+                      textShadow: "0 0 6px hsl(var(--background))",
+                    }}
                   >
                     {division.name}
                   </text>
