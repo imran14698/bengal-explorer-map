@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { MapPin, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import Navbar from "@/components/Navbar";
 
 interface Post {
   id: string;
@@ -18,7 +19,7 @@ const BlogPost = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetch = async () => {
+    const fetchPost = async () => {
       const { data } = await supabase
         .from("blogs")
         .select("*")
@@ -27,16 +28,17 @@ const BlogPost = () => {
       setPost(data);
       setLoading(false);
     };
-    fetch();
+    fetchPost();
   }, [slug]);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-96 space-y-4">
-          <Skeleton className="h-8 w-full" />
-          <Skeleton className="h-4 w-3/4" />
-          <Skeleton className="h-64 w-full" />
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="container py-12 max-w-3xl mx-auto space-y-4">
+          <Skeleton className="h-8 w-2/3" />
+          <Skeleton className="h-4 w-1/3" />
+          <Skeleton className="h-64 w-full rounded-2xl" />
         </div>
       </div>
     );
@@ -44,10 +46,13 @@ const BlogPost = () => {
 
   if (!post) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <h2 className="font-heading text-2xl font-bold text-foreground">Post Not Found</h2>
-          <Link to="/blog" className="text-primary hover:underline text-sm">← Back to Blog</Link>
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="flex items-center justify-center py-32">
+          <div className="text-center space-y-4">
+            <h2 className="font-heading text-2xl font-bold text-foreground">Post Not Found</h2>
+            <Link to="/blog" className="text-primary hover:underline text-sm">← Back to Blog</Link>
+          </div>
         </div>
       </div>
     );
@@ -55,47 +60,46 @@ const BlogPost = () => {
 
   return (
     <div className="min-h-screen bg-background font-body">
-      <header className="border-b border-border bg-card/80 backdrop-blur-sm">
-        <div className="container flex items-center justify-between py-4">
-          <Link to="/" className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-              <MapPin className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <div>
-              <h1 className="font-heading text-xl font-bold text-foreground">Bangladesh InfoMap</h1>
-              <p className="text-xs text-muted-foreground">Explore divisions interactively</p>
-            </div>
-          </Link>
-          <nav className="flex gap-4">
-            <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Map</Link>
-            <Link to="/blog" className="text-sm font-medium text-foreground">Blog</Link>
-          </nav>
-        </div>
-      </header>
+      <Navbar />
 
       <main className="container py-12">
-        <div className="mx-auto max-w-3xl">
-          <Link to="/blog" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-6">
-            <ArrowLeft className="h-4 w-4" /> Back to Blog
+        <article className="mx-auto max-w-3xl">
+          <Link
+            to="/blog"
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8 group"
+          >
+            <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" /> Back to Blog
           </Link>
 
           {post.image_url && (
-            <img src={post.image_url} alt={post.title} className="w-full h-64 object-cover rounded-xl mb-8" />
+            <img
+              src={post.image_url}
+              alt={post.title}
+              className="w-full h-72 object-cover rounded-2xl mb-8 shadow-lg"
+            />
           )}
 
-          <h1 className="font-heading text-3xl font-bold text-foreground mb-2">{post.title}</h1>
-          <p className="text-sm text-muted-foreground mb-8">
-            {new Date(post.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
+            {new Date(post.created_at).toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
           </p>
 
+          <h1 className="font-heading text-4xl font-extrabold tracking-tight text-foreground mb-8 leading-tight">
+            {post.title}
+          </h1>
+
           <div
-            className="prose prose-green max-w-none text-foreground
-              prose-headings:font-heading prose-headings:text-foreground
-              prose-p:text-foreground/85 prose-a:text-primary
-              prose-img:rounded-lg"
+            className="prose prose-green max-w-none text-foreground/90
+              prose-headings:font-heading prose-headings:text-foreground prose-headings:tracking-tight
+              prose-p:leading-relaxed prose-a:text-primary prose-a:no-underline hover:prose-a:underline
+              prose-img:rounded-xl prose-img:shadow-md
+              prose-blockquote:border-primary/30 prose-blockquote:text-muted-foreground"
             dangerouslySetInnerHTML={{ __html: post.content }}
           />
-        </div>
+        </article>
       </main>
     </div>
   );
