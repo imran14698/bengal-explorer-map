@@ -8,7 +8,7 @@ interface Post {
   id: string;
   title: string;
   content: string;
-  cover_image: string | null;
+  image_url: string | null;
   created_at: string;
 }
 
@@ -20,10 +20,9 @@ const BlogPost = () => {
   useEffect(() => {
     const fetch = async () => {
       const { data } = await supabase
-        .from("blog_posts")
+        .from("blogs")
         .select("*")
         .eq("slug", slug)
-        .eq("published", true)
         .single();
       setPost(data);
       setLoading(false);
@@ -80,21 +79,13 @@ const BlogPost = () => {
             <ArrowLeft className="h-4 w-4" /> Back to Blog
           </Link>
 
-          {post.cover_image && (
-            <img
-              src={post.cover_image}
-              alt={post.title}
-              className="w-full h-64 object-cover rounded-xl mb-8"
-            />
+          {post.image_url && (
+            <img src={post.image_url} alt={post.title} className="w-full h-64 object-cover rounded-xl mb-8" />
           )}
 
           <h1 className="font-heading text-3xl font-bold text-foreground mb-2">{post.title}</h1>
           <p className="text-sm text-muted-foreground mb-8">
-            {new Date(post.created_at).toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
+            {new Date(post.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
           </p>
 
           <div

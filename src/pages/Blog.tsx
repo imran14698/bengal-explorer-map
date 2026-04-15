@@ -3,35 +3,37 @@ import { supabase } from "@/lib/supabase";
 import { MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
-interface BlogPost {
+interface Blog {
   id: string;
   title: string;
   slug: string;
-  excerpt: string | null;
-  cover_image: string | null;
-  published: boolean;
+  content: string;
+  image_url: string | null;
   created_at: string;
 }
 
 const Blog = () => {
-  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [posts, setPosts] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchPosts = async () => {
       const { data } = await supabase
-        .from("blog_posts")
-        .select("id, title, slug, excerpt, cover_image, published, created_at")
-        .eq("published", true)
+        .from("blogs")
+        .select("id, title, slug, content, image_url, created_at")
         .order("created_at", { ascending: false });
       setPosts(data || []);
       setLoading(false);
     };
     fetchPosts();
   }, []);
+
+  const getExcerpt = (html: string) => {
+    const text = html.replace(/<[^>]+>/g, "");
+    return text.length > 150 ? text.slice(0, 150) + "…" : text;
+  };
 
   return (
     <div className="min-h-screen bg-background font-body">
@@ -71,31 +73,21 @@ const Blog = () => {
                 <Link key={post.id} to={`/blog/${post.slug}`}>
                   <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
                     <div className="flex flex-col sm:flex-row">
-                      {post.cover_image && (
+                      {post.image_url && (
                         <div className="sm:w-48 h-40 sm:h-auto flex-shrink-0">
-                          <img
-                            src={post.cover_image}
-                            alt={post.title}
-                            className="w-full h-full object-cover"
-                          />
+                          <img src={post.image_url} alt={post.title} className="w-full h-full object-cover" />
                         </div>
                       )}
                       <div className="flex-1">
                         <CardHeader>
                           <CardTitle className="font-heading text-lg">{post.title}</CardTitle>
                           <p className="text-xs text-muted-foreground">
-                            {new Date(post.created_at).toLocaleDateString("en-US", {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                            })}
+                            {new Date(post.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
                           </p>
                         </CardHeader>
-                        {post.excerpt && (
-                          <CardContent>
-                            <p className="text-sm text-muted-foreground line-clamp-2">{post.excerpt}</p>
-                          </CardContent>
-                        )}
+                        <CardContent>
+                          <p className="text-sm text-muted-foreground line-clamp-2">{getExcerpt(post.content)}</p>
+                        </CardContent>
                       </div>
                     </div>
                   </Card>

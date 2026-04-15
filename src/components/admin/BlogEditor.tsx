@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/hooks/useAuth";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
@@ -7,8 +8,6 @@ import LinkExt from "@tiptap/extension-link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -21,29 +20,26 @@ import {
   Link as LinkIcon, Trash2, Pencil, Plus, Undo, Redo,
 } from "lucide-react";
 
-interface BlogPost {
+interface Blog {
   id: string;
   title: string;
   slug: string;
-  excerpt: string | null;
   content: string;
-  cover_image: string | null;
-  published: boolean;
+  image_url: string | null;
+  author_id: string | null;
   created_at: string;
 }
 
 const BlogEditor = () => {
-  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const { user } = useAuth();
+  const [posts, setPosts] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editing, setEditing] = useState<BlogPost | null>(null);
+  const [editing, setEditing] = useState<Blog | null>(null);
 
-  // Form state
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
-  const [excerpt, setExcerpt] = useState("");
-  const [coverImage, setCoverImage] = useState("");
-  const [published, setPublished] = useState(false);
+  const [imageUrl, setImageUrl] = useState("");
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -64,39 +60,30 @@ const BlogEditor = () => {
 
   const fetchPosts = async () => {
     const { data } = await supabase
-      .from("blog_posts")
+      .from("blogs")
       .select("*")
       .order("created_at", { ascending: false });
     setPosts(data || []);
     setLoading(false);
   };
 
-  useEffect(() => {
-    fetchPosts();
-  }, []);
+  useEffect(() => { fetchPosts(); }, []);
 
   const resetForm = () => {
     setTitle("");
     setSlug("");
-    setExcerpt("");
-    setCoverImage("");
-    setPublished(false);
+    setImageUrl("");
     setEditing(null);
     editor?.commands.setContent("");
   };
 
-  const openCreate = () => {
-    resetForm();
-    setDialogOpen(true);
-  };
+  const openCreate = () => { resetForm(); setDialogOpen(true); };
 
-  const openEdit = (post: BlogPost) => {
+  const openEdit = (post: Blog) => {
     setEditing(post);
     setTitle(post.title);
     setSlug(post.slug);
-    setExcerpt(post.excerpt || "");
-    setCoverImage(post.cover_image || "");
-    setPublished(post.published);
+    setImageUrl(post.image_url || "");
     editor?.commands.setContent(post.content || "");
     setDialogOpen(true);
   };
@@ -118,12 +105,12 @@ const BlogEditor = () => {
     return data.publicUrl;
   };
 
-  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
     const url = await uploadImage(file);
-    if (url) setCoverImage(url);
+    if (url) setImageUrl(url);
     setUploading(false);
   };
 
@@ -147,13 +134,19 @@ const BlogEditor = () => {
     }
     setSaving(true);
     const content = editor?.getHTML() || "";
-    const payload = { title, slug, excerpt: excerpt || null, content, cover_image: coverImage || null, published };
+    const payload = {
+      title,
+      slug,
+      content,
+      image_url: imageUrl || null,
+      author_id: user?.id || null,
+    };
 
     let error;
     if (editing) {
-      ({ error } = await supabase.from("blog_posts").update(payload).eq("id", editing.id));
+      ({ error } = await supabase.from("blogs").update(payload).eq("id", editing.id));
     } else {
-      ({ error } = await supabase.from("blog_posts").insert(payload));
+      ({ error } = await supabase.from("blogs").insert(payload));
     }
 
     if (error) {
@@ -169,12 +162,9 @@ const BlogEditor = () => {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this post?")) return;
-    const { error } = await supabase.from("blog_posts").delete().eq("id", id);
+    const { error } = await supabase.from("blogs").delete().eq("id", id);
     if (error) toast.error(error.message);
-    else {
-      toast.success("Post deleted");
-      fetchPosts();
-    }
+    else { toast.success("Post deleted"); fetchPosts(); }
   };
 
   return (
@@ -189,9 +179,7 @@ const BlogEditor = () => {
           </DialogTrigger>
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="font-heading">
-                {editing ? "Edit Post" : "New Post"}
-              </DialogTitle>
+              <DialogTitle className="font-heading">{editing ? "Edit Post" : "New Post"}</DialogTitle>
             </DialogHeader>
 
             <div className="space-y-4 mt-4">
@@ -214,33 +202,21 @@ const BlogEditor = () => {
               </div>
 
               <div className="space-y-2">
-                <Label>Excerpt</Label>
-                <Textarea
-                  value={excerpt}
-                  onChange={(e) => setExcerpt(e.target.value)}
-                  placeholder="Short description..."
-                  rows={2}
-                />
-              </div>
-
-              <div className="space-y-2">
                 <Label>Cover Image</Label>
                 <div className="flex items-center gap-3">
-                  <Input type="file" accept="image/*" onChange={handleCoverUpload} disabled={uploading} />
+                  <Input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} />
                   {uploading && <span className="text-xs text-muted-foreground">Uploading...</span>}
                 </div>
-                {coverImage && (
-                  <img src={coverImage} alt="cover" className="h-24 rounded-lg object-cover mt-2" />
+                {imageUrl && (
+                  <img src={imageUrl} alt="cover" className="h-24 rounded-lg object-cover mt-2" />
                 )}
               </div>
 
               <div className="space-y-2">
                 <Label>Content</Label>
-                {/* Toolbar */}
                 <div className="flex flex-wrap gap-1 border border-border rounded-t-md p-1 bg-muted/50">
                   <Button type="button" variant="ghost" size="icon" className="h-8 w-8"
-                    onClick={() => editor?.chain().focus().toggleBold().run()}
-                    data-active={editor?.isActive("bold")}>
+                    onClick={() => editor?.chain().focus().toggleBold().run()}>
                     <Bold className="h-4 w-4" />
                   </Button>
                   <Button type="button" variant="ghost" size="icon" className="h-8 w-8"
@@ -286,11 +262,6 @@ const BlogEditor = () => {
                 <EditorContent editor={editor} />
               </div>
 
-              <div className="flex items-center gap-2">
-                <Switch checked={published} onCheckedChange={setPublished} />
-                <Label>Published</Label>
-              </div>
-
               <div className="flex justify-end gap-2 pt-2">
                 <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
                 <Button onClick={handleSave} disabled={saving}>
@@ -316,7 +287,6 @@ const BlogEditor = () => {
             <TableRow>
               <TableHead>Title</TableHead>
               <TableHead>Slug</TableHead>
-              <TableHead>Status</TableHead>
               <TableHead>Date</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -326,11 +296,6 @@ const BlogEditor = () => {
               <TableRow key={post.id}>
                 <TableCell className="font-medium">{post.title}</TableCell>
                 <TableCell className="text-muted-foreground text-xs">{post.slug}</TableCell>
-                <TableCell>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${post.published ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
-                    {post.published ? "Published" : "Draft"}
-                  </span>
-                </TableCell>
                 <TableCell className="text-xs text-muted-foreground">
                   {new Date(post.created_at).toLocaleDateString()}
                 </TableCell>
