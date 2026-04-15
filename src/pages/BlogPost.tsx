@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { ArrowLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 interface Post {
   id: string;
@@ -20,66 +21,57 @@ const BlogPost = () => {
 
   useEffect(() => {
     const fetchPost = async () => {
-      const { data } = await supabase
-        .from("blogs")
-        .select("*")
-        .eq("slug", slug)
-        .single();
+      const { data } = await supabase.from("blogs").select("*").eq("slug", slug).single();
       setPost(data);
       setLoading(false);
     };
-    fetchPost();
+    void fetchPost();
   }, [slug]);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="flex min-h-screen flex-col bg-background">
         <Navbar />
-        <div className="container py-12 max-w-3xl mx-auto space-y-4">
+        <div className="container mx-auto max-w-3xl flex-1 space-y-4 py-12">
           <Skeleton className="h-8 w-2/3" />
           <Skeleton className="h-4 w-1/3" />
           <Skeleton className="h-64 w-full rounded-2xl" />
         </div>
+        <Footer />
       </div>
     );
   }
 
   if (!post) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="flex min-h-screen flex-col bg-background">
         <Navbar />
-        <div className="flex items-center justify-center py-32">
-          <div className="text-center space-y-4">
+        <div className="flex flex-1 items-center justify-center py-32">
+          <div className="space-y-4 text-center">
             <h2 className="font-heading text-2xl font-bold text-foreground">Post Not Found</h2>
-            <Link to="/blog" className="text-primary hover:underline text-sm">← Back to Blog</Link>
+            <Link to="/blog" className="text-sm text-primary hover:underline">← Back to Blog</Link>
           </div>
         </div>
+        <Footer />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background font-body">
+    <div className="flex min-h-screen flex-col bg-background font-body">
       <Navbar />
 
-      <main className="container py-12">
+      <main className="container flex-1 py-12">
         <article className="mx-auto max-w-3xl">
-          <Link
-            to="/blog"
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8 group"
-          >
+          <Link to="/blog" className="group mb-8 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
             <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" /> Back to Blog
           </Link>
 
           {post.image_url && (
-            <img
-              src={post.image_url}
-              alt={post.title}
-              className="w-full h-72 object-cover rounded-2xl mb-8 shadow-lg"
-            />
+            <img src={post.image_url} alt={post.title} className="mb-8 h-72 w-full rounded-2xl object-cover shadow-lg" />
           )}
 
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
+          <p className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
             {new Date(post.created_at).toLocaleDateString("en-US", {
               year: "numeric",
               month: "long",
@@ -87,13 +79,11 @@ const BlogPost = () => {
             })}
           </p>
 
-          <h1 className="font-heading text-4xl font-extrabold tracking-tight text-foreground mb-8 leading-tight">
-            {post.title}
-          </h1>
+          <h1 className="mb-8 font-heading text-4xl font-extrabold leading-tight tracking-tight text-foreground">{post.title}</h1>
 
           <div
             className="prose prose-green max-w-none text-foreground/90
-              prose-headings:font-heading prose-headings:text-foreground prose-headings:tracking-tight
+              prose-headings:font-heading prose-headings:tracking-tight prose-headings:text-foreground
               prose-p:leading-relaxed prose-a:text-primary prose-a:no-underline hover:prose-a:underline
               prose-img:rounded-xl prose-img:shadow-md
               prose-blockquote:border-primary/30 prose-blockquote:text-muted-foreground"
@@ -101,6 +91,8 @@ const BlogPost = () => {
           />
         </article>
       </main>
+
+      <Footer />
     </div>
   );
 };
