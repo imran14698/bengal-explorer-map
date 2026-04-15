@@ -6,13 +6,13 @@ import { Upload, FileSpreadsheet, CheckCircle2 } from "lucide-react";
 import * as XLSX from "xlsx";
 
 interface Division {
-  id: string;
+  id: number;
   name: string;
   slug: string;
 }
 
 interface Category {
-  id: string;
+  id: number;
   name: string;
 }
 
