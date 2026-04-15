@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion } from "framer-motion";
 import InteractiveMap from "@/components/InteractiveMap";
 import DivisionInfoPanel from "@/components/DivisionInfoPanel";
 import Navbar from "@/components/Navbar";
@@ -12,16 +13,31 @@ const Index = () => {
       <Navbar />
 
       <main className="container flex-1 py-12">
-        <div className="mb-10 mx-auto max-w-2xl text-center">
-          <h2 className="animate-fade-in font-heading text-4xl font-extrabold tracking-tight text-foreground">
-            Explore Bangladesh
-          </h2>
-          <p className="mt-3 animate-fade-in text-base text-muted-foreground">
-            Hover over a division to highlight it. Click to explore detailed information.
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+          className="mb-10 mx-auto max-w-2xl text-center"
+        >
+          <h1 className="font-heading text-5xl font-extrabold tracking-tight text-foreground">
+            Explore{" "}
+            <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              Bangladesh
+            </span>
+          </h1>
+          <p className="mt-4 text-lg text-muted-foreground leading-relaxed">
+            Hover over a division to highlight it. Click to explore detailed information
+            about geography, culture, and more.
           </p>
-        </div>
+        </motion.div>
 
-        <InteractiveMap selectedDivision={selectedDivision} onDivisionSelect={setSelectedDivision} />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+        >
+          <InteractiveMap selectedDivision={selectedDivision} onDivisionSelect={setSelectedDivision} />
+        </motion.div>
       </main>
 
       <DivisionInfoPanel divisionId={selectedDivision} onClose={() => setSelectedDivision(null)} />

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { ArrowLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -62,13 +63,25 @@ const BlogPost = () => {
       <Navbar />
 
       <main className="container flex-1 py-12">
-        <article className="mx-auto max-w-3xl">
+        <motion.article
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="mx-auto max-w-3xl"
+        >
           <Link to="/blog" className="group mb-8 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
-            <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" /> Back to Blog
+            <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" /> Back to Blog
           </Link>
 
           {post.image_url && (
-            <img src={post.image_url} alt={post.title} className="mb-8 h-72 w-full rounded-2xl object-cover shadow-lg" />
+            <motion.img
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              src={post.image_url}
+              alt={post.title}
+              className="mb-8 h-72 w-full rounded-2xl object-cover shadow-lg"
+            />
           )}
 
           <p className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
@@ -82,14 +95,14 @@ const BlogPost = () => {
           <h1 className="mb-8 font-heading text-4xl font-extrabold leading-tight tracking-tight text-foreground">{post.title}</h1>
 
           <div
-            className="prose prose-green max-w-none text-foreground/90
+            className="prose prose-green dark:prose-invert max-w-none text-foreground/90
               prose-headings:font-heading prose-headings:tracking-tight prose-headings:text-foreground
               prose-p:leading-relaxed prose-a:text-primary prose-a:no-underline hover:prose-a:underline
               prose-img:rounded-xl prose-img:shadow-md
               prose-blockquote:border-primary/30 prose-blockquote:text-muted-foreground"
             dangerouslySetInnerHTML={{ __html: post.content }}
           />
-        </article>
+        </motion.article>
       </main>
 
       <Footer />
