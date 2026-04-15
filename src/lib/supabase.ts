@@ -13,10 +13,27 @@ if (supabaseUrl && supabaseAnonKey) {
     'Create a .env file in project root with these values. ' +
     'Supabase features will be disabled.'
   );
-  // Create a dummy proxy that won't crash but won't work either
-  supabase = new Proxy({} as SupabaseClient, {
-    get: () => () => ({ data: null, error: { message: 'Supabase not configured' } }),
-  });
+  const noopResult = { data: null, error: { message: 'Supabase not configured' } };
+  const handler: ProxyHandler<any> = {
+    get: (_target, prop) => {
+      // Return a nested proxy so chained access like supabase.auth.onAuthStateChange works
+      return new Proxy(() => noopResult, {
+        get: (_t, innerProp) => {
+          if (innerProp === 'then') return undefined; // not a thenable
+          // supabase.auth.onAuthStateChange needs to return { data: { subscription: { unsubscribe } } }
+          if (prop === 'auth' && innerProp === 'onAuthStateChange') {
+            return () => ({ data: { subscription: { unsubscribe: () => {} } } });
+          }
+          if (prop === 'auth' && innerProp === 'getSession') {
+            return () => Promise.resolve({ data: { session: null } });
+          }
+          return new Proxy(() => noopResult, handler);
+        },
+        apply: () => noopResult,
+      });
+    },
+  };
+  supabase = new Proxy({} as SupabaseClient, handler);
 }
 
 export { supabase };
