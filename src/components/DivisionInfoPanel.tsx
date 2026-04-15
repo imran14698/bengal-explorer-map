@@ -38,10 +38,22 @@ const DivisionInfoPanel = ({ divisionId, onClose }: DivisionInfoPanelProps) => {
     const fetchData = async () => {
       setLoading(true);
       try {
+        // First get the division id from slug
+        const { data: divData } = await supabase
+          .from("divisions")
+          .select("id")
+          .eq("slug", divisionId)
+          .single();
+
+        if (!divData) {
+          setData([]);
+          return;
+        }
+
         const { data: rows, error } = await supabase
           .from("division_info")
-          .select("info, categories(name), divisions!inner(slug)")
-          .eq("divisions.slug", divisionId);
+          .select("content, categories(name)")
+          .eq("division_id", divData.id);
 
         if (error) {
           console.error("Error fetching division info:", error);
@@ -54,7 +66,7 @@ const DivisionInfoPanel = ({ divisionId, onClose }: DivisionInfoPanelProps) => {
         (rows || []).forEach((row: any) => {
           const catName = row.categories?.name || "Other";
           if (!grouped[catName]) grouped[catName] = [];
-          grouped[catName].push(row.info);
+          grouped[catName].push(row.content);
         });
 
         const result: CategoryInfo[] = Object.entries(grouped).map(
