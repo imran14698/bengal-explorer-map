@@ -179,7 +179,7 @@ const InteractiveMap = ({ onDivisionSelect, selectedDivision }: InteractiveMapPr
                     textAnchor="middle"
                     dominantBaseline="central"
                     className="pointer-events-none select-none font-body"
-                    style={{ fontSize: "10px", fontWeight: 700, fill: "white", textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}
+                    style={{ fontSize: "10px", fontWeight: 700, fill: "#1a2e1a", textShadow: "0 0 4px rgba(255,255,255,0.8)" }}
                   >
                     {division.name}
                   </text>
