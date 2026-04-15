@@ -3,9 +3,11 @@ import { supabase } from "@/lib/supabase";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar, Search } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 interface Blog {
   id: string;
@@ -23,45 +25,68 @@ const Blog = () => {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [total, setTotal] = useState(0);
+  const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    setPage(0);
+  }, [search]);
 
   useEffect(() => {
     const fetchPosts = async () => {
       setLoading(true);
       const from = page * POSTS_PER_PAGE;
       const to = from + POSTS_PER_PAGE - 1;
+      const trimmedSearch = search.trim();
 
-      const { count } = await supabase
-        .from("blogs")
-        .select("id", { count: "exact", head: true });
-      setTotal(count || 0);
-
-      const { data } = await supabase
+      let countQuery = supabase.from("blogs").select("id", { count: "exact", head: true });
+      let dataQuery = supabase
         .from("blogs")
         .select("id, title, slug, content, image_url, created_at")
         .order("created_at", { ascending: false })
         .range(from, to);
+
+      if (trimmedSearch) {
+        countQuery = countQuery.ilike("title", `%${trimmedSearch}%`);
+        dataQuery = dataQuery.ilike("title", `%${trimmedSearch}%`);
+      }
+
+      const [{ count }, { data }] = await Promise.all([countQuery, dataQuery]);
+      setTotal(count || 0);
       setPosts(data || []);
       setLoading(false);
     };
-    fetchPosts();
-  }, [page]);
+
+    void fetchPosts();
+  }, [page, search]);
 
   const totalPages = Math.ceil(total / POSTS_PER_PAGE);
 
   const getExcerpt = (html: string) => {
     const text = html.replace(/<[^>]+>/g, "");
-    return text.length > 120 ? text.slice(0, 120) + "…" : text;
+    return text.length > 120 ? `${text.slice(0, 120)}…` : text;
   };
 
   return (
-    <div className="min-h-screen bg-background font-body">
+    <div className="flex min-h-screen flex-col bg-background font-body">
       <Navbar />
 
-      <main className="container py-12">
+      <main className="container flex-1 py-12">
         <div className="mx-auto max-w-4xl">
-          <div className="mb-10">
-            <h2 className="font-heading text-4xl font-extrabold tracking-tight text-foreground">Blog</h2>
-            <p className="mt-2 text-muted-foreground">Stories, guides & insights about Bangladesh</p>
+          <div className="mb-10 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+            <div>
+              <h2 className="font-heading text-4xl font-extrabold tracking-tight text-foreground">Blog</h2>
+              <p className="mt-2 text-muted-foreground">Stories, guides & insights about Bangladesh</p>
+            </div>
+
+            <div className="relative w-full md:max-w-sm">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search by title..."
+                className="rounded-xl border-border/70 bg-card pl-9"
+              />
+            </div>
           </div>
 
           {loading ? (
@@ -72,47 +97,45 @@ const Blog = () => {
             </div>
           ) : posts.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24">
-              <div className="h-16 w-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted">
                 <Calendar className="h-7 w-7 text-muted-foreground" />
               </div>
-              <p className="text-muted-foreground text-lg font-medium">No articles yet</p>
-              <p className="text-muted-foreground/70 text-sm mt-1">Check back soon for new content.</p>
+              <p className="text-lg font-medium text-muted-foreground">No matching articles</p>
+              <p className="mt-1 text-sm text-muted-foreground/70">Try a different keyword.</p>
             </div>
           ) : (
             <>
               <div className="grid gap-6 sm:grid-cols-2">
                 {posts.map((post) => (
                   <Link key={post.id} to={`/blog/${post.slug}`} className="group">
-                    <Card className="overflow-hidden rounded-2xl border border-border/60 bg-card hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full">
+                    <Card className="h-full overflow-hidden rounded-2xl border border-border/60 bg-card hover:-translate-y-1 hover:shadow-xl transition-all duration-300">
                       {post.image_url ? (
                         <div className="h-44 overflow-hidden">
                           <img
                             src={post.image_url}
                             alt={post.title}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                           />
                         </div>
                       ) : (
-                        <div className="h-44 bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
-                          <span className="font-heading text-5xl font-bold text-primary/20">
-                            {post.title.charAt(0)}
-                          </span>
+                        <div className="flex h-44 items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5">
+                          <span className="font-heading text-5xl font-bold text-primary/20">{post.title.charAt(0)}</span>
                         </div>
                       )}
                       <CardHeader className="pb-2">
-                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                           {new Date(post.created_at).toLocaleDateString("en-US", {
                             year: "numeric",
                             month: "short",
                             day: "numeric",
                           })}
                         </p>
-                        <CardTitle className="font-heading text-lg leading-snug group-hover:text-primary transition-colors">
+                        <CardTitle className="font-heading text-lg leading-snug transition-colors group-hover:text-primary">
                           {post.title}
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="pt-0">
-                        <p className="text-sm text-muted-foreground line-clamp-2">{getExcerpt(post.content)}</p>
+                        <p className="line-clamp-2 text-sm text-muted-foreground">{getExcerpt(post.content)}</p>
                       </CardContent>
                     </Card>
                   </Link>
@@ -120,14 +143,8 @@ const Blog = () => {
               </div>
 
               {totalPages > 1 && (
-                <div className="flex items-center justify-center gap-2 mt-10">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="rounded-xl"
-                    disabled={page === 0}
-                    onClick={() => setPage((p) => p - 1)}
-                  >
+                <div className="mt-10 flex items-center justify-center gap-2">
+                  <Button variant="outline" size="icon" className="rounded-xl" disabled={page === 0} onClick={() => setPage((p) => p - 1)}>
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
                   {Array.from({ length: totalPages }, (_, i) => (
@@ -135,7 +152,7 @@ const Blog = () => {
                       key={i}
                       variant={i === page ? "default" : "outline"}
                       size="icon"
-                      className="rounded-xl h-9 w-9 text-sm"
+                      className="h-9 w-9 rounded-xl text-sm"
                       onClick={() => setPage(i)}
                     >
                       {i + 1}
@@ -156,6 +173,8 @@ const Blog = () => {
           )}
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 };

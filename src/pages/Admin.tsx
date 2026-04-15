@@ -8,6 +8,7 @@ import CategoriesCrud from "@/components/admin/CategoriesCrud";
 import DivisionInfoForm from "@/components/admin/DivisionInfoForm";
 import BulkImport from "@/components/admin/BulkImport";
 import BlogEditor from "@/components/admin/BlogEditor";
+import Footer from "@/components/Footer";
 
 const Admin = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
@@ -15,7 +16,7 @@ const Admin = () => {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="space-y-4 w-64">
+        <div className="w-64 space-y-4">
           <Skeleton className="h-8 w-full" />
           <Skeleton className="h-4 w-3/4" />
         </div>
@@ -27,7 +28,7 @@ const Admin = () => {
   if (!isAdmin) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="text-center space-y-3">
+        <div className="space-y-3 text-center">
           <h2 className="font-heading text-2xl font-bold text-foreground">Access Denied</h2>
           <p className="text-sm text-muted-foreground">You don't have admin privileges.</p>
           <Button variant="outline" onClick={signOut}>
@@ -39,7 +40,7 @@ const Admin = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="flex min-h-screen flex-col bg-background">
       <header className="border-b border-border bg-card/80 backdrop-blur-sm">
         <div className="container flex items-center justify-between py-4">
           <div className="flex items-center gap-3">
@@ -57,7 +58,7 @@ const Admin = () => {
         </div>
       </header>
 
-      <main className="container py-8">
+      <main className="container flex-1 py-8">
         <Tabs defaultValue="categories">
           <TabsList className="mb-6">
             <TabsTrigger value="categories">Categories</TabsTrigger>
@@ -80,6 +81,8 @@ const Admin = () => {
           </TabsContent>
         </Tabs>
       </main>
+
+      <Footer />
     </div>
   );
 };
