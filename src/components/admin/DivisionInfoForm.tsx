@@ -69,6 +69,7 @@ const DivisionInfoForm = () => {
   const [rows, setRows] = useState<DivisionInfoRow[]>([]);
   const [filterDivision, setFilterDivision] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
+  const [searchText, setSearchText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [exporting, setExporting] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
@@ -205,6 +206,7 @@ const DivisionInfoForm = () => {
   const filteredRows = rows.filter((r) => {
     if (filterDivision !== "all" && r.division_id.toString() !== filterDivision) return false;
     if (filterCategory !== "all" && r.category_id.toString() !== filterCategory) return false;
+    if (searchText.trim() && !r.content.toLowerCase().includes(searchText.trim().toLowerCase())) return false;
     return true;
   });
 
@@ -237,7 +239,7 @@ const DivisionInfoForm = () => {
   // Reset page when filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [filterDivision, filterCategory]);
+  }, [filterDivision, filterCategory, searchText]);
 
   if (loading) {
     return (
@@ -344,6 +346,12 @@ const DivisionInfoForm = () => {
               <Download className="mr-2 h-4 w-4" />
               {exporting ? "Exporting..." : "Export Excel"}
             </Button>
+            <Input
+              placeholder="Search content..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              className="w-44"
+            />
             <Select value={filterCategory} onValueChange={setFilterCategory}>
               <SelectTrigger className="w-44">
                 <SelectValue placeholder="Filter by category" />
