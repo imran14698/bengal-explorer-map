@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, FileSpreadsheet, CheckCircle2 } from "lucide-react";
+import { Upload, FileSpreadsheet, CheckCircle2, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
 import * as XLSX from "xlsx";
 
 interface Division {
@@ -16,11 +16,21 @@ interface Category {
   name: string;
 }
 
+interface SkippedRow {
+  rowNumber: number;
+  division: string;
+  category: string;
+  info: string;
+  reason: string;
+}
+
 const BulkImport = () => {
   const [divisions, setDivisions] = useState<Division[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [importing, setImporting] = useState(false);
   const [result, setResult] = useState<{ success: number; failed: number } | null>(null);
+  const [skippedRows, setSkippedRows] = useState<SkippedRow[]>([]);
+  const [showSkipped, setShowSkipped] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -50,13 +60,11 @@ const BulkImport = () => {
     if (!trimmed) return null;
     const lower = trimmed.toLowerCase();
 
-    // Check existing
     const existing = categories.find(
       (c) => c.name.toLowerCase() === lower || c.id.toString() === lower
     );
     if (existing) return existing.id;
 
-    // Create new category
     const { data, error } = await supabase
       .from("categories")
       .insert({ name: trimmed })
@@ -65,7 +73,6 @@ const BulkImport = () => {
 
     if (error || !data) return null;
 
-    // Add to local cache
     setCategories((prev) => [...prev, data as Category]);
     categories.push(data as Category);
     return data.id;
@@ -77,6 +84,8 @@ const BulkImport = () => {
 
     setImporting(true);
     setResult(null);
+    setSkippedRows([]);
+    setShowSkipped(false);
 
     try {
       const data = await file.arrayBuffer();
@@ -92,49 +101,59 @@ const BulkImport = () => {
 
       let success = 0;
       let failed = 0;
-      const skippedDetails: string[] = [];
+      const skipped: SkippedRow[] = [];
 
-      for (const row of rows) {
-        const divisionValue = row["division"] || row["Division"] || row["division_name"] || "";
-        const categoryValue = row["category"] || row["Category"] || row["category_name"] || "";
-        const infoValue = row["info"] || row["Info"] || row["information"] || row["Information"] || row["content"] || row["Content"] || "";
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        const divisionValue = (row["division"] || row["Division"] || row["division_name"] || "").toString();
+        const categoryValue = (row["category"] || row["Category"] || row["category_name"] || "").toString();
+        const infoValue = (row["info"] || row["Info"] || row["information"] || row["Information"] || row["content"] || row["Content"] || "").toString();
 
         const divisionId = findDivisionId(divisionValue);
         const categoryId = await findOrCreateCategory(categoryValue);
 
-        if (divisionId && categoryId && infoValue.toString().trim()) {
+        if (divisionId && categoryId && infoValue.trim()) {
           const { error } = await supabase.from("division_info").insert({
             division_id: divisionId,
             category_id: categoryId,
-            content: infoValue.toString().trim(),
+            content: infoValue.trim(),
           });
           if (error) {
             failed++;
-            skippedDetails.push(`Insert error: ${error.message}`);
+            skipped.push({
+              rowNumber: i + 2,
+              division: divisionValue,
+              category: categoryValue,
+              info: infoValue.substring(0, 80),
+              reason: `Insert error: ${error.message}`,
+            });
           } else {
             success++;
           }
         } else {
           failed++;
           const reasons: string[] = [];
-          if (!divisionId) reasons.push(`division "${divisionValue}" not found`);
-          if (!categoryId) reasons.push(`category "${categoryValue}" could not be created`);
-          if (!infoValue.toString().trim()) reasons.push("empty info");
-          skippedDetails.push(reasons.join(", "));
+          if (!divisionId) reasons.push(`Division "${divisionValue}" not found`);
+          if (!categoryId) reasons.push(`Category "${categoryValue}" could not be created`);
+          if (!infoValue.trim()) reasons.push("Empty info");
+          skipped.push({
+            rowNumber: i + 2,
+            division: divisionValue,
+            category: categoryValue,
+            info: infoValue.substring(0, 80),
+            reason: reasons.join("; "),
+          });
         }
       }
 
       setResult({ success, failed });
+      setSkippedRows(skipped);
+      if (skipped.length > 0) setShowSkipped(true);
+
       if (success > 0) {
         toast({ title: `Imported ${success} records${failed > 0 ? `, ${failed} skipped` : ""}` });
       } else {
-        toast({
-          title: "No valid records",
-          description: skippedDetails.length > 0
-            ? `Issues: ${[...new Set(skippedDetails)].slice(0, 3).join("; ")}`
-            : "Check columns: division, category, info",
-          variant: "destructive",
-        });
+        toast({ title: "No valid records imported", variant: "destructive" });
       }
     } catch (err: any) {
       toast({ title: "File error", description: err.message, variant: "destructive" });
@@ -175,13 +194,55 @@ const BulkImport = () => {
       </div>
 
       {result && (
-        <div className="rounded-lg border border-border bg-card p-4">
+        <div className="rounded-lg border border-border bg-card p-4 space-y-3">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="h-5 w-5 text-green-600" />
             <span className="text-sm font-medium text-foreground">
               Import complete: {result.success} added, {result.failed} skipped
             </span>
           </div>
+
+          {skippedRows.length > 0 && (
+            <div className="space-y-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground"
+                onClick={() => setShowSkipped(!showSkipped)}
+              >
+                <AlertTriangle className="mr-2 h-4 w-4 text-yellow-500" />
+                {skippedRows.length} skipped row{skippedRows.length > 1 ? "s" : ""}
+                {showSkipped ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />}
+              </Button>
+
+              {showSkipped && (
+                <div className="rounded-md border border-border overflow-auto max-h-64">
+                  <table className="w-full text-xs">
+                    <thead className="bg-muted/50">
+                      <tr>
+                        <th className="px-3 py-2 text-left font-medium text-muted-foreground">Row</th>
+                        <th className="px-3 py-2 text-left font-medium text-muted-foreground">Division</th>
+                        <th className="px-3 py-2 text-left font-medium text-muted-foreground">Category</th>
+                        <th className="px-3 py-2 text-left font-medium text-muted-foreground">Info</th>
+                        <th className="px-3 py-2 text-left font-medium text-muted-foreground">Reason</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {skippedRows.map((sr, idx) => (
+                        <tr key={idx} className="border-t border-border">
+                          <td className="px-3 py-2 text-foreground">{sr.rowNumber}</td>
+                          <td className="px-3 py-2 text-foreground">{sr.division || "—"}</td>
+                          <td className="px-3 py-2 text-foreground">{sr.category || "—"}</td>
+                          <td className="px-3 py-2 text-foreground max-w-[200px] truncate">{sr.info || "—"}</td>
+                          <td className="px-3 py-2 text-destructive">{sr.reason}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>
