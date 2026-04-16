@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Pencil, Trash2, X, Download, ChevronLeft, ChevronRight } from "lucide-react";
@@ -67,8 +68,12 @@ const DivisionInfoForm = () => {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [rows, setRows] = useState<DivisionInfoRow[]>([]);
   const [filterDivision, setFilterDivision] = useState("all");
+  const [filterCategory, setFilterCategory] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [exporting, setExporting] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
   const { toast } = useToast();
 
   const fetchAll = async () => {
@@ -153,6 +158,23 @@ const DivisionInfoForm = () => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Deleted successfully" });
+      setSelectedIds((prev) => { const next = new Set(prev); next.delete(id); return next; });
+      fetchAll();
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    setBulkDeleting(true);
+    const ids = Array.from(selectedIds);
+    const { error } = await supabase.from("division_info").delete().in("id", ids);
+    setBulkDeleting(false);
+    setShowBulkDeleteDialog(false);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: `Deleted ${ids.length} record(s) successfully` });
+      setSelectedIds(new Set());
       fetchAll();
     }
   };
@@ -167,7 +189,6 @@ const DivisionInfoForm = () => {
       }));
 
       const ws = XLSX.utils.json_to_sheet(exportData);
-      // Set column widths
       ws["!cols"] = [{ wch: 15 }, { wch: 15 }, { wch: 60 }];
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Division Info");
@@ -180,19 +201,43 @@ const DivisionInfoForm = () => {
     }
   };
 
-  const filteredRows = filterDivision === "all"
-    ? rows
-    : rows.filter((r) => r.division_id.toString() === filterDivision);
+  // Filtering
+  const filteredRows = rows.filter((r) => {
+    if (filterDivision !== "all" && r.division_id.toString() !== filterDivision) return false;
+    if (filterCategory !== "all" && r.category_id.toString() !== filterCategory) return false;
+    return true;
+  });
 
   // Pagination
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
   const safePage = Math.min(currentPage, totalPages);
   const paginatedRows = filteredRows.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
+  // Select helpers
+  const allPageSelected = paginatedRows.length > 0 && paginatedRows.every((r) => selectedIds.has(r.id));
+  const toggleSelectAll = () => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (allPageSelected) {
+        paginatedRows.forEach((r) => next.delete(r.id));
+      } else {
+        paginatedRows.forEach((r) => next.add(r.id));
+      }
+      return next;
+    });
+  };
+  const toggleSelect = (id: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
   // Reset page when filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [filterDivision]);
+  }, [filterDivision, filterCategory]);
 
   if (loading) {
     return (
@@ -272,13 +317,46 @@ const DivisionInfoForm = () => {
           <h3 className="font-heading text-lg font-bold text-foreground">
             All Division Info ({filteredRows.length})
           </h3>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            {selectedIds.size > 0 && (
+              <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" size="sm">
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete {selectedIds.size} selected
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete {selectedIds.size} record(s)?</AlertDialogTitle>
+                    <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleBulkDelete} disabled={bulkDeleting}>
+                      {bulkDeleting ? "Deleting..." : "Delete All"}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
             <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting || rows.length === 0}>
               <Download className="mr-2 h-4 w-4" />
               {exporting ? "Exporting..." : "Export Excel"}
             </Button>
+            <Select value={filterCategory} onValueChange={setFilterCategory}>
+              <SelectTrigger className="w-44">
+                <SelectValue placeholder="Filter by category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {categories.map((c) => (
+                  <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Select value={filterDivision} onValueChange={setFilterDivision}>
-              <SelectTrigger className="w-48">
+              <SelectTrigger className="w-44">
                 <SelectValue placeholder="Filter by division" />
               </SelectTrigger>
               <SelectContent>
@@ -295,6 +373,13 @@ const DivisionInfoForm = () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-[50px]">
+                  <Checkbox
+                    checked={allPageSelected}
+                    onCheckedChange={toggleSelectAll}
+                    aria-label="Select all"
+                  />
+                </TableHead>
                 <TableHead className="w-[140px]">Division</TableHead>
                 <TableHead className="w-[140px]">Category</TableHead>
                 <TableHead>Content</TableHead>
@@ -304,13 +389,20 @@ const DivisionInfoForm = () => {
             <TableBody>
               {paginatedRows.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
                     No records found.
                   </TableCell>
                 </TableRow>
               ) : (
                 paginatedRows.map((row) => (
-                  <TableRow key={row.id}>
+                  <TableRow key={row.id} data-state={selectedIds.has(row.id) ? "selected" : undefined}>
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedIds.has(row.id)}
+                        onCheckedChange={() => toggleSelect(row.id)}
+                        aria-label={`Select row ${row.id}`}
+                      />
+                    </TableCell>
                     <TableCell className="font-medium">{row.divisions?.name || "—"}</TableCell>
                     <TableCell>{row.categories?.name || "—"}</TableCell>
                     <TableCell className="max-w-xs truncate">{row.content}</TableCell>
