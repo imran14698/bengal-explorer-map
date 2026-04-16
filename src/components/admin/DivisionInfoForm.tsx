@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Pencil, Trash2, Plus, X } from "lucide-react";
+import { Pencil, Trash2, X, Download, ChevronLeft, ChevronRight } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -33,6 +33,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import * as XLSX from "xlsx";
 
 interface Division {
   id: string;
@@ -53,6 +54,8 @@ interface DivisionInfoRow {
   categories: { name: string } | null;
 }
 
+const PAGE_SIZE = 10;
+
 const DivisionInfoForm = () => {
   const [divisions, setDivisions] = useState<Division[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -64,6 +67,8 @@ const DivisionInfoForm = () => {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [rows, setRows] = useState<DivisionInfoRow[]>([]);
   const [filterDivision, setFilterDivision] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [exporting, setExporting] = useState(false);
   const { toast } = useToast();
 
   const fetchAll = async () => {
@@ -152,9 +157,42 @@ const DivisionInfoForm = () => {
     }
   };
 
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const exportData = rows.map((row) => ({
+        Division: row.divisions?.name || "",
+        Category: row.categories?.name || "",
+        Information: row.content,
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      // Set column widths
+      ws["!cols"] = [{ wch: 15 }, { wch: 15 }, { wch: 60 }];
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Division Info");
+      XLSX.writeFile(wb, "division_info_export.xlsx");
+      toast({ title: "Exported successfully" });
+    } catch (err: any) {
+      toast({ title: "Export failed", description: err.message, variant: "destructive" });
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const filteredRows = filterDivision === "all"
     ? rows
     : rows.filter((r) => r.division_id.toString() === filterDivision);
+
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
+  const safePage = Math.min(currentPage, totalPages);
+  const paginatedRows = filteredRows.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+
+  // Reset page when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterDivision]);
 
   if (loading) {
     return (
@@ -230,21 +268,27 @@ const DivisionInfoForm = () => {
 
       {/* List */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <h3 className="font-heading text-lg font-bold text-foreground">
             All Division Info ({filteredRows.length})
           </h3>
-          <Select value={filterDivision} onValueChange={setFilterDivision}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Filter by division" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Divisions</SelectItem>
-              {divisions.map((d) => (
-                <SelectItem key={d.id} value={d.id.toString()}>{d.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-3">
+            <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting || rows.length === 0}>
+              <Download className="mr-2 h-4 w-4" />
+              {exporting ? "Exporting..." : "Export Excel"}
+            </Button>
+            <Select value={filterDivision} onValueChange={setFilterDivision}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Filter by division" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Divisions</SelectItem>
+                {divisions.map((d) => (
+                  <SelectItem key={d.id} value={d.id.toString()}>{d.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <div className="rounded-lg border border-border overflow-hidden">
@@ -258,14 +302,14 @@ const DivisionInfoForm = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredRows.length === 0 ? (
+              {paginatedRows.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
                     No records found.
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredRows.map((row) => (
+                paginatedRows.map((row) => (
                   <TableRow key={row.id}>
                     <TableCell className="font-medium">{row.divisions?.name || "—"}</TableCell>
                     <TableCell>{row.categories?.name || "—"}</TableCell>
@@ -300,6 +344,55 @@ const DivisionInfoForm = () => {
             </TableBody>
           </Table>
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between pt-2">
+            <p className="text-sm text-muted-foreground">
+              Showing {(safePage - 1) * PAGE_SIZE + 1}–{Math.min(safePage * PAGE_SIZE, filteredRows.length)} of {filteredRows.length}
+            </p>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={safePage <= 1}
+                onClick={() => setCurrentPage((p) => p - 1)}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter((p) => p === 1 || p === totalPages || Math.abs(p - safePage) <= 1)
+                .reduce<(number | string)[]>((acc, p, idx, arr) => {
+                  if (idx > 0 && p - (arr[idx - 1] as number) > 1) acc.push("...");
+                  acc.push(p);
+                  return acc;
+                }, [])
+                .map((p, idx) =>
+                  typeof p === "string" ? (
+                    <span key={`e-${idx}`} className="px-2 text-sm text-muted-foreground">…</span>
+                  ) : (
+                    <Button
+                      key={p}
+                      variant={p === safePage ? "default" : "outline"}
+                      size="sm"
+                      className="min-w-[36px]"
+                      onClick={() => setCurrentPage(p)}
+                    >
+                      {p}
+                    </Button>
+                  )
+                )}
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={safePage >= totalPages}
+                onClick={() => setCurrentPage((p) => p + 1)}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
