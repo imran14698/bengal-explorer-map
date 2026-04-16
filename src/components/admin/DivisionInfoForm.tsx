@@ -255,7 +255,7 @@ const DivisionInfoForm = () => {
   return (
     <div className="space-y-8">
       {/* Form */}
-      <div className="rounded-lg border border-border bg-card p-6">
+      <div className="rounded-lg border border-border bg-card p-4 sm:p-6">
         <div className="mb-4 flex items-center justify-between">
           <h3 className="font-heading text-lg font-bold text-foreground">
             {editingId ? "Edit Division Info" : "Add Division Info"}
@@ -315,45 +315,50 @@ const DivisionInfoForm = () => {
 
       {/* List */}
       <div className="space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h3 className="font-heading text-lg font-bold text-foreground">
-            All Division Info ({filteredRows.length})
-          </h3>
-          <div className="flex flex-wrap items-center gap-3">
-            {selectedIds.size > 0 && (
-              <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive" size="sm">
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete {selectedIds.size} selected
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete {selectedIds.size} record(s)?</AlertDialogTitle>
-                    <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleBulkDelete} disabled={bulkDeleting}>
-                      {bulkDeleting ? "Deleting..." : "Delete All"}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            )}
-            <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting || rows.length === 0}>
-              <Download className="mr-2 h-4 w-4" />
-              {exporting ? "Exporting..." : "Export Excel"}
-            </Button>
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h3 className="font-heading text-lg font-bold text-foreground">
+              All Division Info ({filteredRows.length})
+            </h3>
+            <div className="flex flex-wrap items-center gap-2">
+              {selectedIds.size > 0 && (
+                <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="sm">
+                      <Trash2 className="mr-1 h-4 w-4" />
+                      Delete {selectedIds.size}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete {selectedIds.size} record(s)?</AlertDialogTitle>
+                      <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleBulkDelete} disabled={bulkDeleting}>
+                        {bulkDeleting ? "Deleting..." : "Delete All"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+              <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting || rows.length === 0}>
+                <Download className="mr-1 h-4 w-4" />
+                <span className="hidden sm:inline">{exporting ? "Exporting..." : "Export Excel"}</span>
+                <span className="sm:hidden">{exporting ? "..." : "Export"}</span>
+              </Button>
+            </div>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2">
             <Input
               placeholder="Search content..."
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
-              className="w-44"
+              className="w-full sm:w-44"
             />
             <Select value={filterCategory} onValueChange={setFilterCategory}>
-              <SelectTrigger className="w-44">
+              <SelectTrigger className="w-full sm:w-44">
                 <SelectValue placeholder="Filter by category" />
               </SelectTrigger>
               <SelectContent>
@@ -364,7 +369,7 @@ const DivisionInfoForm = () => {
               </SelectContent>
             </Select>
             <Select value={filterDivision} onValueChange={setFilterDivision}>
-              <SelectTrigger className="w-44">
+              <SelectTrigger className="w-full sm:w-44">
                 <SelectValue placeholder="Filter by division" />
               </SelectTrigger>
               <SelectContent>
@@ -377,7 +382,7 @@ const DivisionInfoForm = () => {
           </div>
         </div>
 
-        <div className="rounded-lg border border-border overflow-hidden">
+        <div className="rounded-lg border border-border overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
