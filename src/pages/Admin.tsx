@@ -42,29 +42,29 @@ const Admin = () => {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <header className="border-b border-border bg-card/80 backdrop-blur-sm">
-        <div className="container flex items-center justify-between py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-              <MapPin className="h-5 w-5 text-primary-foreground" />
+        <div className="container flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg bg-primary">
+              <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-primary-foreground" />
             </div>
-            <div>
-              <h1 className="font-heading text-xl font-bold text-foreground">Admin Panel</h1>
-              <p className="text-xs text-muted-foreground">{user.email}</p>
+            <div className="min-w-0">
+              <h1 className="font-heading text-base sm:text-xl font-bold text-foreground">Admin Panel</h1>
+              <p className="text-xs text-muted-foreground truncate">{user.email}</p>
             </div>
           </div>
-          <Button variant="outline" size="sm" onClick={signOut}>
-            <LogOut className="mr-2 h-4 w-4" /> Sign Out
+          <Button variant="outline" size="sm" onClick={signOut} className="shrink-0">
+            <LogOut className="mr-1 sm:mr-2 h-4 w-4" /> <span className="hidden sm:inline">Sign Out</span>
           </Button>
         </div>
       </header>
 
-      <main className="container flex-1 py-8">
+      <main className="container flex-1 px-4 py-6 sm:px-6 sm:py-8">
         <Tabs defaultValue="categories">
-          <TabsList className="mb-6">
-            <TabsTrigger value="categories">Categories</TabsTrigger>
-            <TabsTrigger value="division-info">Division Info</TabsTrigger>
-            <TabsTrigger value="bulk-import">Bulk Import</TabsTrigger>
-            <TabsTrigger value="blog">Blog</TabsTrigger>
+          <TabsList className="mb-6 flex w-full flex-wrap h-auto gap-1">
+            <TabsTrigger value="categories" className="flex-1 min-w-[80px] text-xs sm:text-sm">Categories</TabsTrigger>
+            <TabsTrigger value="division-info" className="flex-1 min-w-[80px] text-xs sm:text-sm">Division Info</TabsTrigger>
+            <TabsTrigger value="bulk-import" className="flex-1 min-w-[80px] text-xs sm:text-sm">Bulk Import</TabsTrigger>
+            <TabsTrigger value="blog" className="flex-1 min-w-[80px] text-xs sm:text-sm">Blog</TabsTrigger>
           </TabsList>
 
           <TabsContent value="categories">
