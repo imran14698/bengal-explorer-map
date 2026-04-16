@@ -17,7 +17,8 @@ import {
 import { toast } from "sonner";
 import {
   Bold, Italic, Heading1, Heading2, List, ListOrdered, ImageIcon,
-  Link as LinkIcon, Trash2, Pencil, Plus, Undo, Redo,
+  Link as LinkIcon, Trash2, Pencil, Plus, Undo, Redo, Search,
+  ChevronLeft, ChevronRight,
 } from "lucide-react";
 
 interface Blog {
@@ -29,6 +30,8 @@ interface Blog {
   author_id: string | null;
   created_at: string;
 }
+
+const PAGE_SIZE = 15;
 
 const BlogEditor = () => {
   const { user } = useAuth();
@@ -42,6 +45,9 @@ const BlogEditor = () => {
   const [imageUrl, setImageUrl] = useState("");
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const editor = useEditor({
     extensions: [
@@ -68,6 +74,19 @@ const BlogEditor = () => {
   };
 
   useEffect(() => { fetchPosts(); }, []);
+
+  // Reset page on search change
+  useEffect(() => { setCurrentPage(1); }, [searchQuery]);
+
+  const filteredPosts = posts.filter((p) =>
+    searchQuery.trim() === "" ||
+    p.title.toLowerCase().includes(searchQuery.trim().toLowerCase()) ||
+    p.slug.toLowerCase().includes(searchQuery.trim().toLowerCase())
+  );
+
+  const totalPages = Math.max(1, Math.ceil(filteredPosts.length / PAGE_SIZE));
+  const safePage = Math.min(currentPage, totalPages);
+  const paginatedPosts = filteredPosts.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
   const resetForm = () => {
     setTitle("");
@@ -169,108 +188,121 @@ const BlogEditor = () => {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-heading text-lg font-semibold text-foreground">Blog Posts</h3>
-        <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) resetForm(); }}>
-          <DialogTrigger asChild>
-            <Button size="sm" onClick={openCreate}>
-              <Plus className="mr-2 h-4 w-4" /> New Post
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="font-heading">{editing ? "Edit Post" : "New Post"}</DialogTitle>
-            </DialogHeader>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <h3 className="font-heading text-lg font-semibold text-foreground">
+          Blog Posts ({filteredPosts.length})
+        </h3>
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search blogs..."
+              className="w-48 pl-9"
+            />
+          </div>
+          <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) resetForm(); }}>
+            <DialogTrigger asChild>
+              <Button size="sm" onClick={openCreate}>
+                <Plus className="mr-2 h-4 w-4" /> New Post
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="font-heading">{editing ? "Edit Post" : "New Post"}</DialogTitle>
+              </DialogHeader>
 
-            <div className="space-y-4 mt-4">
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-4 mt-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label>Title</Label>
+                    <Input
+                      value={title}
+                      onChange={(e) => {
+                        setTitle(e.target.value);
+                        if (!editing) setSlug(generateSlug(e.target.value));
+                      }}
+                      placeholder="Post title"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Slug</Label>
+                    <Input value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="post-slug" />
+                  </div>
+                </div>
+
                 <div className="space-y-2">
-                  <Label>Title</Label>
-                  <Input
-                    value={title}
-                    onChange={(e) => {
-                      setTitle(e.target.value);
-                      if (!editing) setSlug(generateSlug(e.target.value));
-                    }}
-                    placeholder="Post title"
-                  />
+                  <Label>Cover Image</Label>
+                  <div className="flex items-center gap-3">
+                    <Input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} />
+                    {uploading && <span className="text-xs text-muted-foreground">Uploading...</span>}
+                  </div>
+                  {imageUrl && (
+                    <img src={imageUrl} alt="cover" className="h-24 rounded-lg object-cover mt-2" />
+                  )}
                 </div>
+
                 <div className="space-y-2">
-                  <Label>Slug</Label>
-                  <Input value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="post-slug" />
+                  <Label>Content</Label>
+                  <div className="flex flex-wrap gap-1 border border-border rounded-t-md p-1 bg-muted/50">
+                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8"
+                      onClick={() => editor?.chain().focus().toggleBold().run()}>
+                      <Bold className="h-4 w-4" />
+                    </Button>
+                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8"
+                      onClick={() => editor?.chain().focus().toggleItalic().run()}>
+                      <Italic className="h-4 w-4" />
+                    </Button>
+                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8"
+                      onClick={() => editor?.chain().focus().toggleHeading({ level: 1 }).run()}>
+                      <Heading1 className="h-4 w-4" />
+                    </Button>
+                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8"
+                      onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}>
+                      <Heading2 className="h-4 w-4" />
+                    </Button>
+                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8"
+                      onClick={() => editor?.chain().focus().toggleBulletList().run()}>
+                      <List className="h-4 w-4" />
+                    </Button>
+                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8"
+                      onClick={() => editor?.chain().focus().toggleOrderedList().run()}>
+                      <ListOrdered className="h-4 w-4" />
+                    </Button>
+                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8"
+                      onClick={insertEditorImage}>
+                      <ImageIcon className="h-4 w-4" />
+                    </Button>
+                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8"
+                      onClick={() => {
+                        const url = prompt("Link URL:");
+                        if (url) editor?.chain().focus().setLink({ href: url }).run();
+                      }}>
+                      <LinkIcon className="h-4 w-4" />
+                    </Button>
+                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8"
+                      onClick={() => editor?.chain().focus().undo().run()}>
+                      <Undo className="h-4 w-4" />
+                    </Button>
+                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8"
+                      onClick={() => editor?.chain().focus().redo().run()}>
+                      <Redo className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <EditorContent editor={editor} />
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+                  <Button onClick={handleSave} disabled={saving}>
+                    {saving ? "Saving..." : editing ? "Update" : "Create"}
+                  </Button>
                 </div>
               </div>
-
-              <div className="space-y-2">
-                <Label>Cover Image</Label>
-                <div className="flex items-center gap-3">
-                  <Input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} />
-                  {uploading && <span className="text-xs text-muted-foreground">Uploading...</span>}
-                </div>
-                {imageUrl && (
-                  <img src={imageUrl} alt="cover" className="h-24 rounded-lg object-cover mt-2" />
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label>Content</Label>
-                <div className="flex flex-wrap gap-1 border border-border rounded-t-md p-1 bg-muted/50">
-                  <Button type="button" variant="ghost" size="icon" className="h-8 w-8"
-                    onClick={() => editor?.chain().focus().toggleBold().run()}>
-                    <Bold className="h-4 w-4" />
-                  </Button>
-                  <Button type="button" variant="ghost" size="icon" className="h-8 w-8"
-                    onClick={() => editor?.chain().focus().toggleItalic().run()}>
-                    <Italic className="h-4 w-4" />
-                  </Button>
-                  <Button type="button" variant="ghost" size="icon" className="h-8 w-8"
-                    onClick={() => editor?.chain().focus().toggleHeading({ level: 1 }).run()}>
-                    <Heading1 className="h-4 w-4" />
-                  </Button>
-                  <Button type="button" variant="ghost" size="icon" className="h-8 w-8"
-                    onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}>
-                    <Heading2 className="h-4 w-4" />
-                  </Button>
-                  <Button type="button" variant="ghost" size="icon" className="h-8 w-8"
-                    onClick={() => editor?.chain().focus().toggleBulletList().run()}>
-                    <List className="h-4 w-4" />
-                  </Button>
-                  <Button type="button" variant="ghost" size="icon" className="h-8 w-8"
-                    onClick={() => editor?.chain().focus().toggleOrderedList().run()}>
-                    <ListOrdered className="h-4 w-4" />
-                  </Button>
-                  <Button type="button" variant="ghost" size="icon" className="h-8 w-8"
-                    onClick={insertEditorImage}>
-                    <ImageIcon className="h-4 w-4" />
-                  </Button>
-                  <Button type="button" variant="ghost" size="icon" className="h-8 w-8"
-                    onClick={() => {
-                      const url = prompt("Link URL:");
-                      if (url) editor?.chain().focus().setLink({ href: url }).run();
-                    }}>
-                    <LinkIcon className="h-4 w-4" />
-                  </Button>
-                  <Button type="button" variant="ghost" size="icon" className="h-8 w-8"
-                    onClick={() => editor?.chain().focus().undo().run()}>
-                    <Undo className="h-4 w-4" />
-                  </Button>
-                  <Button type="button" variant="ghost" size="icon" className="h-8 w-8"
-                    onClick={() => editor?.chain().focus().redo().run()}>
-                    <Redo className="h-4 w-4" />
-                  </Button>
-                </div>
-                <EditorContent editor={editor} />
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2">
-                <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-                <Button onClick={handleSave} disabled={saving}>
-                  {saving ? "Saving..." : editing ? "Update" : "Create"}
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {loading ? (
@@ -279,38 +311,80 @@ const BlogEditor = () => {
             <div key={i} className="h-12 bg-muted animate-pulse rounded" />
           ))}
         </div>
-      ) : posts.length === 0 ? (
-        <p className="text-muted-foreground text-center py-8">No blog posts yet.</p>
+      ) : paginatedPosts.length === 0 ? (
+        <p className="text-muted-foreground text-center py-8">
+          {searchQuery.trim() ? "No matching blog posts." : "No blog posts yet."}
+        </p>
       ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Title</TableHead>
-              <TableHead>Slug</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {posts.map((post) => (
-              <TableRow key={post.id}>
-                <TableCell className="font-medium">{post.title}</TableCell>
-                <TableCell className="text-muted-foreground text-xs">{post.slug}</TableCell>
-                <TableCell className="text-xs text-muted-foreground">
-                  {new Date(post.created_at).toLocaleDateString()}
-                </TableCell>
-                <TableCell className="text-right">
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(post)}>
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete(post.id)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </TableCell>
+        <>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Title</TableHead>
+                <TableHead>Slug</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {paginatedPosts.map((post) => (
+                <TableRow key={post.id}>
+                  <TableCell className="font-medium">{post.title}</TableCell>
+                  <TableCell className="text-muted-foreground text-xs">{post.slug}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {new Date(post.created_at).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(post)}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete(post.id)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between pt-4">
+              <p className="text-sm text-muted-foreground">
+                Showing {(safePage - 1) * PAGE_SIZE + 1}–{Math.min(safePage * PAGE_SIZE, filteredPosts.length)} of {filteredPosts.length}
+              </p>
+              <div className="flex items-center gap-1">
+                <Button variant="outline" size="sm" disabled={safePage <= 1} onClick={() => setCurrentPage((p) => p - 1)}>
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter((p) => p === 1 || p === totalPages || Math.abs(p - safePage) <= 1)
+                  .reduce<(number | string)[]>((acc, p, idx, arr) => {
+                    if (idx > 0 && p - (arr[idx - 1] as number) > 1) acc.push("...");
+                    acc.push(p);
+                    return acc;
+                  }, [])
+                  .map((p, idx) =>
+                    typeof p === "string" ? (
+                      <span key={`e-${idx}`} className="px-2 text-sm text-muted-foreground">…</span>
+                    ) : (
+                      <Button
+                        key={p}
+                        variant={p === safePage ? "default" : "outline"}
+                        size="sm"
+                        className="min-w-[36px]"
+                        onClick={() => setCurrentPage(p as number)}
+                      >
+                        {p}
+                      </Button>
+                    )
+                  )}
+                <Button variant="outline" size="sm" disabled={safePage >= totalPages} onClick={() => setCurrentPage((p) => p + 1)}>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

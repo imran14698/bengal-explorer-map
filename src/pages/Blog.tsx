@@ -19,7 +19,7 @@ interface Blog {
   created_at: string;
 }
 
-const POSTS_PER_PAGE = 6;
+const POSTS_PER_PAGE = 15;
 
 const cardVariants = {
   hidden: { opacity: 0, y: 30 },
