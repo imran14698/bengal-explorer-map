@@ -1,8 +1,9 @@
-import { X } from "lucide-react";
+import { X, Languages } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 
 import barishalMap from "@/assets/divisions/barishal.png";
 import chattogramMap from "@/assets/divisions/chattogram.png";
@@ -18,16 +19,23 @@ interface DivisionInfoPanelProps {
   onClose: () => void;
 }
 
-const divisionNames: Record<string, string> = {
-  dhaka: "Dhaka",
-  chattogram: "Chattogram",
-  rajshahi: "Rajshahi",
-  khulna: "Khulna",
-  barishal: "Barishal",
-  sylhet: "Sylhet",
-  rangpur: "Rangpur",
-  mymensingh: "Mymensingh",
+const divisionNames: Record<string, { en: string; bn: string }> = {
+  dhaka: { en: "Dhaka", bn: "ঢাকা" },
+  chattogram: { en: "Chattogram", bn: "চট্টগ্রাম" },
+  rajshahi: { en: "Rajshahi", bn: "রাজশাহী" },
+  khulna: { en: "Khulna", bn: "খুলনা" },
+  barishal: { en: "Barishal", bn: "বরিশাল" },
+  sylhet: { en: "Sylhet", bn: "সিলেট" },
+  rangpur: { en: "Rangpur", bn: "রংপুর" },
+  mymensingh: { en: "Mymensingh", bn: "ময়মনসিংহ" },
 };
+
+// Eagerly load all images in src/assets/divisions so users can drop in
+// any extension (png/jpg/jpeg/webp/svg) named after the division slug.
+const divisionImageModules = import.meta.glob(
+  "@/assets/divisions/*.{png,jpg,jpeg,webp,svg,PNG,JPG,JPEG,WEBP,SVG}",
+  { eager: true, import: "default" }
+) as Record<string, string>;
 
 const divisionMaps: Record<string, string> = {
   dhaka: dhakaMap,
@@ -40,14 +48,42 @@ const divisionMaps: Record<string, string> = {
   mymensingh: mymensinghMap,
 };
 
+// Override defaults with anything found via glob (lets user replace the image
+// just by saving a file like `dhaka.jpg` or `dhaka.svg` into the folder).
+for (const [path, url] of Object.entries(divisionImageModules)) {
+  const file = path.split("/").pop() || "";
+  const slug = file.replace(/\.[^.]+$/, "").toLowerCase();
+  if (slug in divisionMaps || slug in divisionNames) {
+    divisionMaps[slug] = url;
+  }
+}
+
 interface CategoryInfo {
   categoryName: string;
-  items: string[];
+  items: { en: string; bn: string | null }[];
 }
+
+type Lang = "en" | "bn";
+
+const uiText = {
+  en: {
+    division: "Division",
+    noInfo: "No information available for this division yet.",
+    close: "Close",
+    switchTo: "বাংলা",
+  },
+  bn: {
+    division: "বিভাগ",
+    noInfo: "এই বিভাগের জন্য এখনো কোনো তথ্য নেই।",
+    close: "বন্ধ করুন",
+    switchTo: "English",
+  },
+};
 
 const DivisionInfoPanel = ({ divisionId, onClose }: DivisionInfoPanelProps) => {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<CategoryInfo[]>([]);
+  const [lang, setLang] = useState<Lang>("en");
 
   useEffect(() => {
     if (!divisionId) {
@@ -71,7 +107,7 @@ const DivisionInfoPanel = ({ divisionId, onClose }: DivisionInfoPanelProps) => {
 
         const { data: rows, error } = await supabase
           .from("division_info")
-          .select("content, categories(name)")
+          .select("content, bn_content, categories(name)")
           .eq("division_id", divData.id);
 
         if (error) {
@@ -80,11 +116,11 @@ const DivisionInfoPanel = ({ divisionId, onClose }: DivisionInfoPanelProps) => {
           return;
         }
 
-        const grouped: Record<string, string[]> = {};
+        const grouped: Record<string, { en: string; bn: string | null }[]> = {};
         (rows || []).forEach((row: any) => {
           const catName = row.categories?.name || "Other";
           if (!grouped[catName]) grouped[catName] = [];
-          grouped[catName].push(row.content);
+          grouped[catName].push({ en: row.content, bn: row.bn_content ?? null });
         });
 
         const result: CategoryInfo[] = Object.entries(grouped).map(
@@ -102,17 +138,25 @@ const DivisionInfoPanel = ({ divisionId, onClose }: DivisionInfoPanelProps) => {
     fetchData();
   }, [divisionId]);
 
-  // Lock body scroll when modal open
+  // Lock body scroll + ESC to close
   useEffect(() => {
-    if (divisionId) {
-      document.body.style.overflow = "hidden";
-    } else {
+    if (!divisionId) {
       document.body.style.overflow = "";
+      return;
     }
+    document.body.style.overflow = "hidden";
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKey);
     return () => {
       document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleKey);
     };
-  }, [divisionId]);
+  }, [divisionId, onClose]);
+
+  const t = uiText[lang];
+  const divName = divisionId ? divisionNames[divisionId] : null;
 
   return (
     <AnimatePresence>
@@ -135,7 +179,7 @@ const DivisionInfoPanel = ({ divisionId, onClose }: DivisionInfoPanelProps) => {
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ type: "spring", stiffness: 280, damping: 28 }}
             onClick={(e) => e.stopPropagation()}
-            className="relative z-10 w-full max-w-6xl max-h-[90vh] overflow-hidden rounded-2xl border border-white/20 bg-white/10 dark:bg-white/5 shadow-2xl backdrop-blur-2xl"
+            className="relative z-10 flex w-full max-w-6xl max-h-[90vh] flex-col overflow-hidden rounded-2xl border border-white/20 bg-white/10 dark:bg-white/5 shadow-2xl backdrop-blur-2xl"
             style={{
               boxShadow:
                 "0 25px 50px -12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2)",
@@ -145,37 +189,50 @@ const DivisionInfoPanel = ({ divisionId, onClose }: DivisionInfoPanelProps) => {
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5" />
 
             {/* Header */}
-            <div className="relative flex items-center justify-between border-b border-white/10 px-6 py-4 backdrop-blur-md">
-              <h2 className="font-heading text-2xl sm:text-3xl font-bold text-foreground drop-shadow-sm">
-                {divisionNames[divisionId] || divisionId}{" "}
-                <span className="text-base font-normal text-muted-foreground">
-                  Division
+            <div className="relative flex shrink-0 items-center justify-between gap-3 border-b border-white/10 px-4 py-3 backdrop-blur-md sm:px-6 sm:py-4">
+              <h2 className="font-heading text-xl sm:text-2xl md:text-3xl font-bold text-foreground drop-shadow-sm truncate">
+                {divName ? (lang === "bn" ? divName.bn : divName.en) : divisionId}{" "}
+                <span className="text-sm sm:text-base font-normal text-muted-foreground">
+                  {t.division}
                 </span>
               </h2>
-              <button
-                onClick={onClose}
-                aria-label="Close"
-                className="rounded-full border border-white/20 bg-white/10 p-2 text-foreground backdrop-blur-md transition-all hover:bg-white/20 hover:scale-105"
-              >
-                <X className="h-5 w-5" />
-              </button>
+              <div className="flex items-center gap-2 shrink-0">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setLang((p) => (p === "en" ? "bn" : "en"))}
+                  className="rounded-full border border-white/20 bg-white/10 backdrop-blur-md hover:bg-white/20 text-xs sm:text-sm"
+                >
+                  <Languages className="mr-1 h-4 w-4" />
+                  {t.switchTo}
+                </Button>
+                <button
+                  onClick={onClose}
+                  aria-label={t.close}
+                  className="rounded-full border border-white/20 bg-white/10 p-2 text-foreground backdrop-blur-md transition-all hover:bg-white/20 hover:scale-105"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
             </div>
 
-            {/* Content: grid with map + info */}
-            <div className="relative grid max-h-[calc(90vh-72px)] grid-cols-1 lg:grid-cols-2 overflow-hidden">
+            {/* Content: grid with map + info — MIN-H-0 is critical so child can scroll */}
+            <div className="relative grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-2 overflow-hidden">
               {/* Map side */}
-              <div className="relative flex items-center justify-center overflow-hidden border-b border-white/10 bg-white/5 p-4 lg:border-b-0 lg:border-r">
-                <div className="relative h-full w-full max-h-[40vh] lg:max-h-[calc(90vh-100px)]">
-                  <img
-                    src={divisionMaps[divisionId]}
-                    alt={`${divisionNames[divisionId]} division map`}
-                    className="h-full w-full object-contain drop-shadow-2xl"
-                  />
-                </div>
+              <div className="relative flex min-h-0 items-center justify-center overflow-hidden border-b border-white/10 bg-white/5 p-4 lg:border-b-0 lg:border-r">
+                <motion.img
+                  key={divisionId}
+                  initial={{ scale: 0.85, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: "spring", stiffness: 200, damping: 22, delay: 0.1 }}
+                  src={divisionMaps[divisionId]}
+                  alt={`${divName?.en ?? divisionId} division map`}
+                  className="h-full max-h-[35vh] w-full object-contain drop-shadow-2xl lg:max-h-full"
+                />
               </div>
 
-              {/* Info side */}
-              <div className="overflow-y-auto p-6 max-h-[50vh] lg:max-h-[calc(90vh-72px)]">
+              {/* Info side - scrollable */}
+              <div className="min-h-0 overflow-y-auto p-4 sm:p-6">
                 {loading ? (
                   <div className="space-y-6">
                     {Array.from({ length: 4 }).map((_, i) => (
@@ -187,11 +244,9 @@ const DivisionInfoPanel = ({ divisionId, onClose }: DivisionInfoPanelProps) => {
                     ))}
                   </div>
                 ) : data.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    No information available for this division yet.
-                  </p>
+                  <p className="text-sm text-muted-foreground">{t.noInfo}</p>
                 ) : (
-                  <div className="space-y-6">
+                  <div className="space-y-4 pb-4">
                     {data.map((cat) => (
                       <div
                         key={cat.categoryName}
@@ -201,14 +256,20 @@ const DivisionInfoPanel = ({ divisionId, onClose }: DivisionInfoPanelProps) => {
                           {cat.categoryName}
                         </h3>
                         <ul className="list-disc space-y-1 pl-5">
-                          {cat.items.map((item, idx) => (
-                            <li
-                              key={idx}
-                              className="text-sm text-foreground/90 leading-relaxed"
-                            >
-                              {item}
-                            </li>
-                          ))}
+                          {cat.items.map((item, idx) => {
+                            const text =
+                              lang === "bn" && item.bn && item.bn.trim()
+                                ? item.bn
+                                : item.en;
+                            return (
+                              <li
+                                key={idx}
+                                className="text-sm text-foreground/90 leading-relaxed"
+                              >
+                                {text}
+                              </li>
+                            );
+                          })}
                         </ul>
                       </div>
                     ))}

@@ -108,6 +108,7 @@ const BulkImport = () => {
         const divisionValue = (row["division"] || row["Division"] || row["division_name"] || "").toString();
         const categoryValue = (row["category"] || row["Category"] || row["category_name"] || "").toString();
         const infoValue = (row["info"] || row["Info"] || row["information"] || row["Information"] || row["content"] || row["Content"] || "").toString();
+        const bnInfoValue = (row["info_bn"] || row["bn_info"] || row["bn_content"] || row["content_bn"] || row["Information (Bangla)"] || row["Bangla"] || row["bangla"] || "").toString();
 
         const divisionId = findDivisionId(divisionValue);
         const categoryId = await findOrCreateCategory(categoryValue);
@@ -117,6 +118,7 @@ const BulkImport = () => {
             division_id: divisionId,
             category_id: categoryId,
             content: infoValue.trim(),
+            bn_content: bnInfoValue.trim() || null,
           });
           if (error) {
             failed++;
