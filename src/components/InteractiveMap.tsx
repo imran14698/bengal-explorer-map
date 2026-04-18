@@ -72,6 +72,26 @@ const InteractiveMap = ({ onDivisionSelect, selectedDivision }: InteractiveMapPr
                   className="transition-[stroke-width] duration-200"
                 />
               ))}
+              {/* Custom themed division label */}
+              <text
+                x={division.cx}
+                y={division.cy}
+                textAnchor="middle"
+                dominantBaseline="middle"
+                className="pointer-events-none select-none font-display"
+                style={{
+                  fontSize: 44,
+                  fontWeight: 700,
+                  fill: "hsl(var(--foreground))",
+                  paintOrder: "stroke",
+                  stroke: "hsl(var(--background))",
+                  strokeWidth: 6,
+                  strokeLinejoin: "round",
+                  letterSpacing: "0.02em",
+                }}
+              >
+                {division.name}
+              </text>
             </motion.g>
           );
         })}
