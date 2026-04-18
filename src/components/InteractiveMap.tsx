@@ -11,22 +11,26 @@ interface InteractiveMapProps {
 const InteractiveMap = ({ onDivisionSelect, selectedDivision }: InteractiveMapProps) => {
   const [hoveredDivision, setHoveredDivision] = useState<string | null>(null);
 
+  // Strip outer <svg ...> wrapper so we can inline the contents inside our own
+  // <svg>. This lets `currentColor` (used for the land/landmass fill in the
+  // base map) inherit from CSS — making the map respect light/dark themes.
+  const baseMapInner = useMemo(
+    () => baseMapSvg.replace(/^[\s\S]*?<svg[^>]*>/, "").replace(/<\/svg>\s*$/, ""),
+    []
+  );
+
   return (
-    <div className="flex items-center justify-center p-4">
+    <div className="flex items-center justify-center p-4 text-muted">
       <svg
         viewBox="0 0 1530 2138"
         className="w-full max-w-2xl drop-shadow-2xl"
         xmlns="http://www.w3.org/2000/svg"
       >
-        {/* Base map (rivers, ocean, neighbouring countries, region labels) */}
-        <image
-          href="/assets/bangladesh_regions_map.svg"
-          x="0"
-          y="0"
-          width="1530"
-          height="2138"
-          preserveAspectRatio="xMidYMid meet"
-          className="pointer-events-none"
+        {/* Base map (rivers, ocean, neighbouring countries) — inlined so its
+            currentColor fills follow the active theme. */}
+        <g
+          className="pointer-events-none text-muted-foreground/30"
+          dangerouslySetInnerHTML={{ __html: baseMapInner }}
         />
 
         {/* Interactive division overlays — each <g> contains all the
