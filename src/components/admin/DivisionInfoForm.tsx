@@ -51,6 +51,7 @@ interface DivisionInfoRow {
   division_id: number;
   category_id: number;
   content: string;
+  bn_content: string | null;
   divisions: { name: string } | null;
   categories: { name: string } | null;
 }
@@ -65,6 +66,7 @@ const DivisionInfoForm = () => {
   const [divisionId, setDivisionId] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [content, setContent] = useState("");
+  const [bnContent, setBnContent] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
   const [rows, setRows] = useState<DivisionInfoRow[]>([]);
   const [filterDivision, setFilterDivision] = useState("all");
@@ -83,7 +85,7 @@ const DivisionInfoForm = () => {
       supabase.from("categories").select("id, name").order("name"),
       supabase
         .from("division_info")
-        .select("id, division_id, category_id, content, divisions(name), categories(name)")
+        .select("id, division_id, category_id, content, bn_content, divisions(name), categories(name)")
         .order("id", { ascending: false }),
     ]);
     setDivisions(divRes.data || []);
@@ -100,6 +102,7 @@ const DivisionInfoForm = () => {
     setDivisionId("");
     setCategoryId("");
     setContent("");
+    setBnContent("");
     setEditingId(null);
   };
 
@@ -118,6 +121,7 @@ const DivisionInfoForm = () => {
           division_id: Number(divisionId),
           category_id: Number(categoryId),
           content: content.trim(),
+          bn_content: bnContent.trim() || null,
         })
         .eq("id", editingId);
       setSubmitting(false);
@@ -133,12 +137,14 @@ const DivisionInfoForm = () => {
         division_id: Number(divisionId),
         category_id: Number(categoryId),
         content: content.trim(),
+        bn_content: bnContent.trim() || null,
       });
       setSubmitting(false);
       if (error) {
         toast({ title: "Error", description: error.message, variant: "destructive" });
       } else {
         setContent("");
+        setBnContent("");
         toast({ title: "Added successfully" });
         fetchAll();
       }
@@ -150,6 +156,7 @@ const DivisionInfoForm = () => {
     setDivisionId(row.division_id.toString());
     setCategoryId(row.category_id.toString());
     setContent(row.content);
+    setBnContent(row.bn_content || "");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -187,10 +194,11 @@ const DivisionInfoForm = () => {
         Division: row.divisions?.name || "",
         Category: row.categories?.name || "",
         Information: row.content,
+        "Information (Bangla)": row.bn_content || "",
       }));
 
       const ws = XLSX.utils.json_to_sheet(exportData);
-      ws["!cols"] = [{ wch: 15 }, { wch: 15 }, { wch: 60 }];
+      ws["!cols"] = [{ wch: 15 }, { wch: 15 }, { wch: 60 }, { wch: 60 }];
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Division Info");
       XLSX.writeFile(wb, "division_info_export.xlsx");
@@ -296,11 +304,21 @@ const DivisionInfoForm = () => {
           </div>
 
           <div className="space-y-2">
-            <Label>Information</Label>
+            <Label>Information (English)</Label>
             <Textarea
-              placeholder="Enter the information text..."
+              placeholder="Enter the information text in English..."
               value={content}
               onChange={(e) => setContent(e.target.value)}
+              rows={4}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Information (Bangla) <span className="text-xs text-muted-foreground font-normal">— optional</span></Label>
+            <Textarea
+              placeholder="বাংলায় তথ্য লিখুন..."
+              value={bnContent}
+              onChange={(e) => setBnContent(e.target.value)}
               rows={4}
             />
           </div>
