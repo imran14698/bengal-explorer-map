@@ -1529,7 +1529,7 @@
      inkscape:label="greyback"
      style="display:inline">
     <path
-       style="opacity:1;fill:#e0e0e0;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline"
+       style="opacity:1;fill:currentColor;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline"
        d="M 357.03297,1649.9188 L 319.68388,1667.0617 L 314.86584,1679.6737 L 328.9761,1709.4286 L 335.99033,1730.2654 L 341.43214,1760.8571 L 329.66127,1778 L 306.11953,1778 L 288.46323,1763.7143 L 276.69235,1732.2857 L 270.80691,1729.4286 L 270.80691,1749.4286 L 276.69235,1775.1429 L 288.46323,1780.8571 L 282.57779,1789.4286 L 247.26517,1789.4286 L 235.49431,1772.2857 L 235.49431,1749.4286 L 226.66616,1735.1429 L 220.78073,1738 L 220.78073,1763.7143 L 223.72344,1792.2857 L 223.72344,1809.4286 L 197.23898,1809.4286 L 188.41083,1803.7143 L 170.75452,1792.2857 L 158.98366,1786.5714 L 141.32736,1786.5714 L 150.15551,1798 L 156.04094,1803.7143 L 156.04094,1809.4286 L 150.15551,1812.2857 L 126.61376,1806.5714 L 111.90018,1786.5714 L 106.01474,1772.2857 L 103.07203,1766.5714 L 88.358436,1766.5714 L 88.358436,1772.2857 L 88.358436,1792.2857 L 94.243866,1800.8571 L 97.186589,1820.8571 L 76.587567,1832.2857 L 47.160392,1849.4286 L 23.618652,1829.4286 L 5.9623472,1815.1429 L -23.464827,1843.7143 L -26.407545,-16.285715 L 1565.6027,-13.428573 L 1571.4881,2146.5714 L 1450.8366,2146.5714 L 1414.6367,2092.2857 L 1340.6055,1868.5917 L 1433.1803,1455.1429 L 1407.1593,1185.7346 L 1383.1541,1112.2857 L 1300.758,1178 L 1250.7318,1326.5714 L 1180.1066,1340.8571 L 1081.4246,1273.3256 L 1009.4291,1092.2857 L 924.0902,938 L 644.53204,843.71429 L 317.8904,838 L 276.12091,887.7549 L 357.03297,1649.9188 z"
        id="path3037"
        sodipodi:nodetypes="ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
@@ -3673,7 +3673,7 @@
            y="1948.281">BAY OF BENGAL</tspan></text>
       <text
          xml:space="preserve"
-         style="font-size:36px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:semi-condensed;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#e0e0e0;fill-opacity:1;stroke:none;display:inline;font-family:DejaVu calibri Condensed;-inkscape-font-specification:'DejaVu calibri Condensed, Bold Semi-Condensed'"
+         style="font-size:36px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:semi-condensed;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:currentColor;fill-opacity:1;stroke:none;display:inline;font-family:DejaVu calibri Condensed;-inkscape-font-specification:'DejaVu calibri Condensed, Bold Semi-Condensed'"
          x="150.14865"
          y="1485.8633"
          id="text9672"
@@ -3691,7 +3691,7 @@
            id="tspan9688">(INDIA)</tspan></text>
       <text
          xml:space="preserve"
-         style="font-size:36px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:semi-condensed;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#e0e0e0;fill-opacity:1;stroke:none;display:inline;font-family:DejaVu calibri Condensed;-inkscape-font-specification:'DejaVu calibri Condensed, Bold Semi-Condensed'"
+         style="font-size:36px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:semi-condensed;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:currentColor;fill-opacity:1;stroke:none;display:inline;font-family:DejaVu calibri Condensed;-inkscape-font-specification:'DejaVu calibri Condensed, Bold Semi-Condensed'"
          x="924.43445"
          y="360.14896"
          id="text9676"
@@ -3709,7 +3709,7 @@
            id="tspan9690">(INDIA)</tspan></text>
       <text
          xml:space="preserve"
-         style="font-size:36px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:semi-condensed;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#e0e0e0;fill-opacity:1;stroke:none;display:inline;font-family:DejaVu calibri Condensed;-inkscape-font-specification:'DejaVu calibri Condensed, Bold Semi-Condensed'"
+         style="font-size:36px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:semi-condensed;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:currentColor;fill-opacity:1;stroke:none;display:inline;font-family:DejaVu calibri Condensed;-inkscape-font-specification:'DejaVu calibri Condensed, Bold Semi-Condensed'"
          x="1173.0059"
          y="1051.5775"
          id="text9680"
@@ -3727,7 +3727,7 @@
            id="tspan9692">(INDIA)</tspan></text>
       <text
          xml:space="preserve"
-         style="font-size:36px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:semi-condensed;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#e0e0e0;fill-opacity:1;stroke:none;display:inline;font-family:DejaVu calibri Condensed;-inkscape-font-specification:'DejaVu calibri Condensed, Bold Semi-Condensed'"
+         style="font-size:36px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:semi-condensed;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:currentColor;fill-opacity:1;stroke:none;display:inline;font-family:DejaVu calibri Condensed;-inkscape-font-specification:'DejaVu calibri Condensed, Bold Semi-Condensed'"
          x="1473.0059"
          y="1963.0061"
          id="text9684"
@@ -3768,7 +3768,7 @@
          id="text5518"
          y="1485.8633"
          x="150.14865"
-         style="font-size:36px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:semi-condensed;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#e0e0e0;fill-opacity:1;stroke:none;display:inline;font-family:DejaVu calibri Condensed;-inkscape-font-specification:'DejaVu calibri Condensed, Bold Semi-Condensed'"
+         style="font-size:36px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:semi-condensed;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:currentColor;fill-opacity:1;stroke:none;display:inline;font-family:DejaVu calibri Condensed;-inkscape-font-specification:'DejaVu calibri Condensed, Bold Semi-Condensed'"
          xml:space="preserve"><tspan
            y="1485.8633"
            x="150.14865"
@@ -3790,7 +3790,7 @@
          id="text5524"
          y="360.14896"
          x="924.43445"
-         style="font-size:36px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:semi-condensed;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#e0e0e0;fill-opacity:1;stroke:none;display:inline;font-family:DejaVu calibri Condensed;-inkscape-font-specification:'DejaVu calibri Condensed, Bold Semi-Condensed'"
+         style="font-size:36px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:semi-condensed;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:currentColor;fill-opacity:1;stroke:none;display:inline;font-family:DejaVu calibri Condensed;-inkscape-font-specification:'DejaVu calibri Condensed, Bold Semi-Condensed'"
          xml:space="preserve"><tspan
            y="360.14896"
            x="924.43445"
@@ -3808,7 +3808,7 @@
          id="text5530"
          y="1051.5775"
          x="1173.0059"
-         style="font-size:36px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:semi-condensed;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#e0e0e0;fill-opacity:1;stroke:none;display:inline;font-family:DejaVu calibri Condensed;-inkscape-font-specification:'DejaVu calibri Condensed, Bold Semi-Condensed'"
+         style="font-size:36px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:semi-condensed;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:currentColor;fill-opacity:1;stroke:none;display:inline;font-family:DejaVu calibri Condensed;-inkscape-font-specification:'DejaVu calibri Condensed, Bold Semi-Condensed'"
          xml:space="preserve"><tspan
            y="1051.5775"
            x="1173.0059"
@@ -3826,7 +3826,7 @@
          id="text5536"
          y="1963.0061"
          x="1473.0059"
-         style="font-size:36px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:semi-condensed;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#e0e0e0;fill-opacity:1;stroke:none;display:inline;font-family:DejaVu calibri Condensed;-inkscape-font-specification:'DejaVu calibri Condensed, Bold Semi-Condensed'"
+         style="font-size:36px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:semi-condensed;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:currentColor;fill-opacity:1;stroke:none;display:inline;font-family:DejaVu calibri Condensed;-inkscape-font-specification:'DejaVu calibri Condensed, Bold Semi-Condensed'"
          xml:space="preserve"><tspan
            y="1963.0061"
            x="1473.0059"
