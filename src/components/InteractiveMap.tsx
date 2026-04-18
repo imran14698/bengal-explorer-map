@@ -29,8 +29,9 @@ const InteractiveMap = ({ onDivisionSelect, selectedDivision }: InteractiveMapPr
         />
 
         {/* Interactive division overlays — each <g> contains all the
-            district paths grouped under one division. Transparent until
-            hovered/selected so the base map shows through. */}
+            district paths grouped under one division, painted with the
+            division's own colour so that when the group lifts on hover
+            the actual map piece appears to rise. */}
         {divisionShapes.map((division) => {
           const isHovered = hoveredDivision === division.id;
           const isSelected = selectedDivision === division.id;
@@ -58,17 +59,17 @@ const InteractiveMap = ({ onDivisionSelect, selectedDivision }: InteractiveMapPr
                 <path
                   key={i}
                   d={d}
-                  fill={
+                  fill={division.color}
+                  stroke={
                     isSelected
                       ? "hsl(var(--map-selected))"
                       : isHovered
-                      ? "hsl(var(--map-hover))"
-                      : "hsl(var(--map-default))"
+                      ? "hsl(var(--primary))"
+                      : "#000000"
                   }
-                  fillOpacity={isSelected ? 0.8 : isHovered ? 0.7 : 0}
-                  stroke={active ? "hsl(var(--map-selected))" : "transparent"}
-                  strokeWidth={active ? 3 : 0}
-                  className="transition-all duration-200"
+                  strokeWidth={active ? 3 : 0.5}
+                  strokeLinejoin="round"
+                  className="transition-[stroke-width] duration-200"
                 />
               ))}
             </motion.g>
