@@ -130,6 +130,85 @@ const InteractiveMap = ({ onDivisionSelect, selectedDivision }: InteractiveMapPr
         className="w-full max-w-2xl drop-shadow-2xl"
         xmlns="http://www.w3.org/2000/svg"
       >
+        <defs>
+          <linearGradient id="oceanGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#bfe3f5" />
+            <stop offset="100%" stopColor="#7cc1e0" />
+          </linearGradient>
+          <pattern id="waves" x="0" y="0" width="20" height="8" patternUnits="userSpaceOnUse">
+            <path d="M0,4 Q5,0 10,4 T20,4" fill="none" stroke="#ffffff" strokeWidth="0.4" opacity="0.5" />
+          </pattern>
+        </defs>
+
+        {/* Ocean / Bay of Bengal background */}
+        <rect x="270" y="-10" width="430" height="530" fill="url(#oceanGradient)" />
+        <rect x="270" y="-10" width="430" height="530" fill="url(#waves)" />
+
+        {/* Bay of Bengal label */}
+        <text
+          x="560"
+          y="490"
+          textAnchor="middle"
+          className="pointer-events-none select-none"
+          style={{
+            fontSize: "16px",
+            fontWeight: 700,
+            fill: "#1e5a7a",
+            fontStyle: "italic",
+            letterSpacing: "2px",
+            opacity: 0.85,
+          }}
+        >
+          BAY OF BENGAL
+        </text>
+        <text
+          x="560"
+          y="505"
+          textAnchor="middle"
+          className="pointer-events-none select-none"
+          style={{
+            fontSize: "9px",
+            fontWeight: 500,
+            fill: "#1e5a7a",
+            letterSpacing: "1px",
+            opacity: 0.7,
+          }}
+        >
+          বঙ্গোপসাগর
+        </text>
+
+        {/* Major rivers — Jamuna, Padma, Meghna */}
+        <g className="pointer-events-none" opacity="0.85">
+          {/* Jamuna (north to mid, west of Dhaka) */}
+          <path
+            d="M428,120 Q420,160 425,200 Q432,240 445,275 Q455,295 470,310"
+            fill="none"
+            stroke="#3b9bd1"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+          />
+          {/* Padma (west-southeast across) */}
+          <path
+            d="M340,235 Q380,250 420,260 Q455,272 485,290 Q510,305 525,320"
+            fill="none"
+            stroke="#3b9bd1"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+          />
+          {/* Meghna (Sylhet down to Bay) */}
+          <path
+            d="M600,200 Q585,240 555,280 Q525,320 510,360 Q500,400 495,440"
+            fill="none"
+            stroke="#3b9bd1"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+          />
+          {/* River labels */}
+          <text x="418" y="180" fontSize="7" fill="#1e5a7a" fontStyle="italic" fontWeight="600" transform="rotate(-75 418 180)">Jamuna</text>
+          <text x="395" y="252" fontSize="7" fill="#1e5a7a" fontStyle="italic" fontWeight="600">Padma</text>
+          <text x="555" y="295" fontSize="7" fill="#1e5a7a" fontStyle="italic" fontWeight="600" transform="rotate(60 555 295)">Meghna</text>
+        </g>
+
         {divisions.map((division) => {
           const isHovered = hoveredDivision === division.id;
           const isSelected = selectedDivision === division.id;
