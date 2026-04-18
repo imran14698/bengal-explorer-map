@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { divisionShapes } from "./divisionShapes";
+import baseMapSvg from "@/assets/bangladesh_regions_map.svg?raw";
 
 interface InteractiveMapProps {
   onDivisionSelect: (divisionId: string | null) => void;
