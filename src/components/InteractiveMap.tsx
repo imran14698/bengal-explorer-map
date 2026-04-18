@@ -177,9 +177,10 @@ const InteractiveMap = ({ onDivisionSelect, selectedDivision }: InteractiveMapPr
                       ? "hsl(var(--map-hover))"
                       : "hsl(var(--map-default))"
                   }
+                  fillOpacity={isSelected || isHovered ? 0.85 : 0.45}
                   stroke="hsl(var(--background))"
                   strokeWidth={1.5}
-                  className="transition-colors duration-200"
+                  className="transition-all duration-200"
                 />
               ))}
               {(() => {
