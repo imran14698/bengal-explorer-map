@@ -3,16 +3,21 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/use-toast";
-import { Check, Loader2, Type } from "lucide-react";
+import { Check, Loader2, RotateCcw, Type } from "lucide-react";
 import {
   useFonts,
   BANGLA_PRESETS,
   ENGLISH_PRESETS,
+  SCALE_PRESETS,
+  DEFAULT_TYPE_SCALE,
+  DEFAULT_FONTS,
   parseGoogleFontsUrl,
   type FontRole,
   type FontConfig,
+  type TypeScale,
 } from "@/hooks/useFonts";
 
 const ROLES: { role: FontRole; label: string; sample: string; bangla: boolean }[] = [
