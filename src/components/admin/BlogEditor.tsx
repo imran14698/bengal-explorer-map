@@ -1,10 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Image from "@tiptap/extension-image";
-import LinkExt from "@tiptap/extension-link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,24 +10,31 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
-  Bold, Italic, Heading1, Heading2, List, ListOrdered, ImageIcon,
-  Link as LinkIcon, Trash2, Pencil, Plus, Undo, Redo, Search,
-  ChevronLeft, ChevronRight,
+  Trash2, Pencil, Plus, Search, ChevronLeft, ChevronRight,
 } from "lucide-react";
+import RichEditor from "./RichEditor";
 
 interface Blog {
   id: string;
-  title: string;
-  slug: string;
-  content: string;
+  title_en: string;
+  title_bn: string | null;
+  slug_en: string;
+  slug_bn: string | null;
+  content_en: string;
+  content_bn: string | null;
   image_url: string | null;
   author_id: string | null;
   created_at: string;
 }
 
 const PAGE_SIZE = 15;
+
+const slugify = (t: string) =>
+  t.toLowerCase().trim().replace(/[^a-z0-9\u0980-\u09FF]+/g, "-").replace(/(^-|-$)/g, "");
 
 const BlogEditor = () => {
   const { user } = useAuth();
@@ -40,75 +43,72 @@ const BlogEditor = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Blog | null>(null);
 
-  const [title, setTitle] = useState("");
-  const [slug, setSlug] = useState("");
+  // Bilingual fields
+  const [titleEn, setTitleEn] = useState("");
+  const [titleBn, setTitleBn] = useState("");
+  const [slugEn, setSlugEn] = useState("");
+  const [slugBn, setSlugBn] = useState("");
+  const [contentEn, setContentEn] = useState("");
+  const [contentBn, setContentBn] = useState("");
+
   const [imageUrl, setImageUrl] = useState("");
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-
-  const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Image.configure({ inline: false }),
-      LinkExt.configure({ openOnClick: false }),
-    ],
-    content: "",
-    editorProps: {
-      attributes: {
-        class:
-          "min-h-[200px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring prose prose-sm max-w-none",
-      },
-    },
-  });
+  const [activeTab, setActiveTab] = useState<"en" | "bn">("en");
 
   const fetchPosts = async () => {
     const { data } = await supabase
       .from("blogs")
       .select("*")
       .order("created_at", { ascending: false });
-    setPosts(data || []);
+    setPosts((data as Blog[]) || []);
     setLoading(false);
   };
 
   useEffect(() => { fetchPosts(); }, []);
-
-  // Reset page on search change
   useEffect(() => { setCurrentPage(1); }, [searchQuery]);
 
-  const filteredPosts = posts.filter((p) =>
-    searchQuery.trim() === "" ||
-    p.title.toLowerCase().includes(searchQuery.trim().toLowerCase()) ||
-    p.slug.toLowerCase().includes(searchQuery.trim().toLowerCase())
-  );
+  const filteredPosts = posts.filter((p) => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      p.title_en?.toLowerCase().includes(q) ||
+      p.title_bn?.toLowerCase().includes(q) ||
+      p.slug_en?.toLowerCase().includes(q) ||
+      p.slug_bn?.toLowerCase().includes(q)
+    );
+  });
 
   const totalPages = Math.max(1, Math.ceil(filteredPosts.length / PAGE_SIZE));
   const safePage = Math.min(currentPage, totalPages);
   const paginatedPosts = filteredPosts.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
   const resetForm = () => {
-    setTitle("");
-    setSlug("");
+    setTitleEn(""); setTitleBn("");
+    setSlugEn(""); setSlugBn("");
+    setContentEn(""); setContentBn("");
     setImageUrl("");
     setEditing(null);
-    editor?.commands.setContent("");
+    setActiveTab("en");
   };
 
   const openCreate = () => { resetForm(); setDialogOpen(true); };
 
   const openEdit = (post: Blog) => {
     setEditing(post);
-    setTitle(post.title);
-    setSlug(post.slug);
+    setTitleEn(post.title_en || "");
+    setTitleBn(post.title_bn || "");
+    setSlugEn(post.slug_en || "");
+    setSlugBn(post.slug_bn || "");
+    setContentEn(post.content_en || "");
+    setContentBn(post.content_bn || "");
     setImageUrl(post.image_url || "");
-    editor?.commands.setContent(post.content || "");
+    setActiveTab("en");
     setDialogOpen(true);
   };
-
-  const generateSlug = (t: string) =>
-    t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
   const uploadImage = async (file: File): Promise<string | null> => {
     const ext = file.name.split(".").pop();
@@ -124,7 +124,7 @@ const BlogEditor = () => {
     return data.publicUrl;
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
@@ -133,30 +133,20 @@ const BlogEditor = () => {
     setUploading(false);
   };
 
-  const insertEditorImage = async () => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
-    input.onchange = async () => {
-      const file = input.files?.[0];
-      if (!file) return;
-      const url = await uploadImage(file);
-      if (url) editor?.chain().focus().setImage({ src: url }).run();
-    };
-    input.click();
-  };
-
   const handleSave = async () => {
-    if (!title.trim() || !slug.trim()) {
-      toast.error("Title and slug are required");
+    if (!titleEn.trim() || !slugEn.trim() || !contentEn.trim()) {
+      toast.error("English title, slug and content are required");
+      setActiveTab("en");
       return;
     }
     setSaving(true);
-    const content = editor?.getHTML() || "";
     const payload = {
-      title,
-      slug,
-      content,
+      title_en: titleEn.trim(),
+      title_bn: titleBn.trim() || null,
+      slug_en: slugEn.trim(),
+      slug_bn: slugBn.trim() || null,
+      content_en: contentEn,
+      content_bn: contentBn.trim() ? contentBn : null,
       image_url: imageUrl || null,
       author_id: user?.id || null,
     };
@@ -208,90 +198,93 @@ const BlogEditor = () => {
                 <Plus className="mr-2 h-4 w-4" /> New Post
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-4xl max-h-[92vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle className="font-heading">{editing ? "Edit Post" : "New Post"}</DialogTitle>
               </DialogHeader>
 
-              <div className="space-y-4 mt-4">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label>Title</Label>
-                    <Input
-                      value={title}
-                      onChange={(e) => {
-                        setTitle(e.target.value);
-                        if (!editing) setSlug(generateSlug(e.target.value));
-                      }}
-                      placeholder="Post title"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Slug</Label>
-                    <Input value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="post-slug" />
-                  </div>
-                </div>
-
+              <div className="space-y-5 mt-4">
+                {/* Cover image (shared between languages) */}
                 <div className="space-y-2">
-                  <Label>Cover Image</Label>
+                  <Label>Cover Image (shared)</Label>
                   <div className="flex items-center gap-3">
-                    <Input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} />
+                    <Input type="file" accept="image/*" onChange={handleCoverUpload} disabled={uploading} />
                     {uploading && <span className="text-xs text-muted-foreground">Uploading...</span>}
                   </div>
                   {imageUrl && (
-                    <img src={imageUrl} alt="cover" className="h-24 rounded-lg object-cover mt-2" />
+                    <img src={imageUrl} alt="cover" className="h-24 rounded-lg object-cover mt-2 border border-border" />
                   )}
                 </div>
 
-                <div className="space-y-2">
-                  <Label>Content</Label>
-                  <div className="flex flex-wrap gap-1 border border-border rounded-t-md p-1 bg-muted/50">
-                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8"
-                      onClick={() => editor?.chain().focus().toggleBold().run()}>
-                      <Bold className="h-4 w-4" />
-                    </Button>
-                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8"
-                      onClick={() => editor?.chain().focus().toggleItalic().run()}>
-                      <Italic className="h-4 w-4" />
-                    </Button>
-                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8"
-                      onClick={() => editor?.chain().focus().toggleHeading({ level: 1 }).run()}>
-                      <Heading1 className="h-4 w-4" />
-                    </Button>
-                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8"
-                      onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}>
-                      <Heading2 className="h-4 w-4" />
-                    </Button>
-                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8"
-                      onClick={() => editor?.chain().focus().toggleBulletList().run()}>
-                      <List className="h-4 w-4" />
-                    </Button>
-                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8"
-                      onClick={() => editor?.chain().focus().toggleOrderedList().run()}>
-                      <ListOrdered className="h-4 w-4" />
-                    </Button>
-                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8"
-                      onClick={insertEditorImage}>
-                      <ImageIcon className="h-4 w-4" />
-                    </Button>
-                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8"
-                      onClick={() => {
-                        const url = prompt("Link URL:");
-                        if (url) editor?.chain().focus().setLink({ href: url }).run();
-                      }}>
-                      <LinkIcon className="h-4 w-4" />
-                    </Button>
-                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8"
-                      onClick={() => editor?.chain().focus().undo().run()}>
-                      <Undo className="h-4 w-4" />
-                    </Button>
-                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8"
-                      onClick={() => editor?.chain().focus().redo().run()}>
-                      <Redo className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <EditorContent editor={editor} />
-                </div>
+                {/* Bilingual tabs */}
+                <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "en" | "bn")}>
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="en">
+                      English <Badge variant="secondary" className="ml-2 text-[10px]">required</Badge>
+                    </TabsTrigger>
+                    <TabsTrigger value="bn">
+                      বাংলা <Badge variant="outline" className="ml-2 text-[10px]">optional</Badge>
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="en" className="space-y-4 mt-4">
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label>Title (EN)</Label>
+                        <Input
+                          value={titleEn}
+                          onChange={(e) => {
+                            setTitleEn(e.target.value);
+                            if (!editing) setSlugEn(slugify(e.target.value));
+                          }}
+                          placeholder="Post title"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Slug (EN)</Label>
+                        <Input value={slugEn} onChange={(e) => setSlugEn(slugify(e.target.value))} placeholder="post-slug" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Content (EN)</Label>
+                      <RichEditor
+                        value={contentEn}
+                        onChange={setContentEn}
+                        onUploadImage={uploadImage}
+                        placeholder="Write your English content here..."
+                      />
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="bn" className="space-y-4 mt-4">
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label>শিরোনাম (BN)</Label>
+                        <Input
+                          value={titleBn}
+                          onChange={(e) => {
+                            setTitleBn(e.target.value);
+                            if (!editing && !slugBn) setSlugBn(slugify(e.target.value));
+                          }}
+                          placeholder="পোস্টের শিরোনাম"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>স্লাগ (BN)</Label>
+                        <Input value={slugBn} onChange={(e) => setSlugBn(slugify(e.target.value))} placeholder="post-slug-bn" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>কন্টেন্ট (BN)</Label>
+                      <RichEditor
+                        value={contentBn}
+                        onChange={setContentBn}
+                        onUploadImage={uploadImage}
+                        placeholder="এখানে বাংলা কন্টেন্ট লিখুন..."
+                      />
+                    </div>
+                  </TabsContent>
+                </Tabs>
 
                 <div className="flex justify-end gap-2 pt-2">
                   <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
@@ -320,7 +313,8 @@ const BlogEditor = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Title</TableHead>
+                <TableHead>Title (EN)</TableHead>
+                <TableHead>Title (BN)</TableHead>
                 <TableHead>Slug</TableHead>
                 <TableHead>Date</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -329,8 +323,11 @@ const BlogEditor = () => {
             <TableBody>
               {paginatedPosts.map((post) => (
                 <TableRow key={post.id}>
-                  <TableCell className="font-medium">{post.title}</TableCell>
-                  <TableCell className="text-muted-foreground text-xs">{post.slug}</TableCell>
+                  <TableCell className="font-medium">{post.title_en}</TableCell>
+                  <TableCell className="text-foreground/80">
+                    {post.title_bn || <span className="text-muted-foreground italic text-xs">—</span>}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground text-xs">{post.slug_en}</TableCell>
                   <TableCell className="text-xs text-muted-foreground">
                     {new Date(post.created_at).toLocaleDateString()}
                   </TableCell>
