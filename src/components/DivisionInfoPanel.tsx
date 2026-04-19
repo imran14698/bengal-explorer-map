@@ -6,14 +6,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useLanguage, type Lang } from "@/hooks/useLanguage";
 
-import barishalMap from "@/assets/divisions/barishal.png";
-import chattogramMap from "@/assets/divisions/chattogram.png";
-import dhakaMap from "@/assets/divisions/dhaka.png";
-import khulnaMap from "@/assets/divisions/khulna.png";
-import mymensinghMap from "@/assets/divisions/mymensingh.png";
-import rajshahiMap from "@/assets/divisions/rajshahi.png";
-import rangpurMap from "@/assets/divisions/rangpur.png";
-import sylhetMap from "@/assets/divisions/sylhet.png";
+import dhakaImg from "@/assets/divisions/dhaka.webp";
+import khulnaImg from "@/assets/divisions/khulna.webp";
+import mymensinghImg from "@/assets/divisions/mymensingh.webp";
+import rajshahiImg from "@/assets/divisions/rajshahi.webp";
+import rangpurImg from "@/assets/divisions/rangpur.webp";
+import barisalImg from "@/assets/divisions/barisal.webp";
 
 interface DivisionInfoPanelProps {
   divisionId: string | null;
@@ -31,33 +29,16 @@ const divisionNames: Record<string, { en: string; bn: string }> = {
   mymensingh: { en: "Mymensingh", bn: "ময়মনসিংহ" },
 };
 
-// Eagerly load all images in src/assets/divisions so users can drop in
-// any extension (png/jpg/jpeg/webp/svg) named after the division slug.
-const divisionImageModules = import.meta.glob(
-  "@/assets/divisions/*.{png,jpg,jpeg,webp,svg,PNG,JPG,JPEG,WEBP,SVG}",
-  { eager: true, import: "default" }
-) as Record<string, string>;
-
+// Load division images
 const divisionMaps: Record<string, string> = {
-  dhaka: dhakaMap,
-  chattogram: chattogramMap,
-  rajshahi: rajshahiMap,
-  khulna: khulnaMap,
-  barishal: barishalMap,
-  sylhet: sylhetMap,
-  rangpur: rangpurMap,
-  mymensingh: mymensinghMap,
+  dhaka: dhakaImg,
+  khulna: khulnaImg,
+  mymensingh: mymensinghImg,
+  rajshahi: rajshahiImg,
+  rangpur: rangpurImg,
+  barisal: barisalImg,  // divisionShapes uses "barisal" (without 'h')
+  barishal: barisalImg, // support both spellings
 };
-
-// Override defaults with anything found via glob (lets user replace the image
-// just by saving a file like `dhaka.jpg` or `dhaka.svg` into the folder).
-for (const [path, url] of Object.entries(divisionImageModules)) {
-  const file = path.split("/").pop() || "";
-  const slug = file.replace(/\.[^.]+$/, "").toLowerCase();
-  if (slug in divisionMaps || slug in divisionNames) {
-    divisionMaps[slug] = url;
-  }
-}
 
 interface CategoryInfo {
   categoryName: string;
