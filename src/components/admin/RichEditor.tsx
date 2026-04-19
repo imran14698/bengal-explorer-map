@@ -181,6 +181,8 @@ const Toolbar = ({ editor, onUploadImage }: { editor: Editor; onUploadImage?: (f
 
   return (
     <div className="flex flex-wrap items-center gap-0.5 rounded-t-md border border-border bg-muted/40 p-1.5">
+      <FontFamilyPicker editor={editor} />
+      <Separator orientation="vertical" className="mx-1 h-6" />
       <TB title="Bold" active={editor.isActive("bold")} onClick={() => editor.chain().focus().toggleBold().run()}><Bold className="h-4 w-4" /></TB>
       <TB title="Italic" active={editor.isActive("italic")} onClick={() => editor.chain().focus().toggleItalic().run()}><Italic className="h-4 w-4" /></TB>
       <TB title="Underline" active={editor.isActive("underline")} onClick={() => editor.chain().focus().toggleUnderline().run()}><UnderlineIcon className="h-4 w-4" /></TB>
