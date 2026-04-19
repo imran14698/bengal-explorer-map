@@ -1,7 +1,9 @@
-import { Folder, MapPinned, Upload, FileText, Type } from "lucide-react";
+import { Folder, MapPinned, Upload, FileText, Type, ExternalLink } from "lucide-react";
+import { Link } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -83,6 +85,28 @@ const AdminSidebar = ({ active, onChange }: AdminSidebarProps) => {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      <SidebarFooter className="border-t border-sidebar-border">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              tooltip="View Site"
+              className="hover:bg-sidebar-accent/60"
+            >
+              <Link
+                to="/"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => isMobile && setOpenMobile(false)}
+              >
+                <ExternalLink className="h-4 w-4" />
+                <span>View Site</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 };
