@@ -93,12 +93,35 @@
 }
 
 @layer base {
+  :root {
+    --font-english-body: "Inter";
+    --font-english-heading: "Plus Jakarta Sans";
+    --font-bangla-body: "Noto Sans Bengali";
+    --font-bangla-heading: "Noto Sans Bengali";
+  }
+
   * {
     @apply border-border;
   }
 
   body {
-    @apply bg-background text-foreground font-body transition-colors duration-300;
+    @apply bg-background text-foreground transition-colors duration-300;
+    font-family: var(--font-english-body), Inter, sans-serif;
+  }
+
+  /* Bangla text — anywhere lang="bn" is set, swap to the configured Bangla font. */
+  [lang="bn"],
+  [lang="bn"] * {
+    font-family: var(--font-bangla-body), "Noto Sans Bengali", sans-serif;
+  }
+  [lang="bn"] h1,
+  [lang="bn"] h2,
+  [lang="bn"] h3,
+  [lang="bn"] h4,
+  [lang="bn"] h5,
+  [lang="bn"] h6,
+  [lang="bn"] .font-heading {
+    font-family: var(--font-bangla-heading), "Noto Sans Bengali", sans-serif;
   }
 }
 
