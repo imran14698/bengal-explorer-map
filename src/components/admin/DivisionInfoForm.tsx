@@ -400,7 +400,83 @@ const DivisionInfoForm = () => {
           </div>
         </div>
 
-        <div className="rounded-lg border border-border overflow-x-auto">
+        {/* Mobile cards */}
+        <div className="md:hidden space-y-3">
+          {paginatedRows.length === 0 ? (
+            <div className="rounded-xl border border-border bg-card p-6 text-center text-sm text-muted-foreground">
+              No records found.
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center gap-2 px-1">
+                <Checkbox
+                  checked={allPageSelected}
+                  onCheckedChange={toggleSelectAll}
+                  aria-label="Select all"
+                />
+                <span className="text-xs text-muted-foreground">
+                  Select all on this page
+                </span>
+              </div>
+              {paginatedRows.map((row) => {
+                const selected = selectedIds.has(row.id);
+                return (
+                  <div
+                    key={row.id}
+                    className={`rounded-xl border p-4 space-y-2 transition-colors ${
+                      selected ? "border-primary/60 bg-primary/5" : "border-border bg-card"
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <Checkbox
+                        checked={selected}
+                        onCheckedChange={() => toggleSelect(row.id)}
+                        aria-label={`Select row ${row.id}`}
+                        className="mt-1"
+                      />
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <span className="rounded-md bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+                            {row.divisions?.name || "—"}
+                          </span>
+                          <span className="rounded-md bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                            {row.categories?.name || "—"}
+                          </span>
+                        </div>
+                        <p className="text-sm text-foreground/90 line-clamp-3">{row.content}</p>
+                      </div>
+                      <div className="flex shrink-0 flex-col gap-0.5">
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEdit(row)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete this entry?</AlertDialogTitle>
+                              <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDelete(row.id)}>Delete</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </>
+          )}
+        </div>
+
+        {/* Desktop table */}
+        <div className="hidden md:block rounded-lg border border-border overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -412,7 +488,7 @@ const DivisionInfoForm = () => {
                   />
                 </TableHead>
                 <TableHead className="min-w-[110px]">Division</TableHead>
-                <TableHead className="hidden sm:table-cell min-w-[110px]">Category</TableHead>
+                <TableHead className="min-w-[110px]">Category</TableHead>
                 <TableHead className="min-w-[200px]">Content</TableHead>
                 <TableHead className="w-[90px] text-right">Actions</TableHead>
               </TableRow>
@@ -434,13 +510,8 @@ const DivisionInfoForm = () => {
                         aria-label={`Select row ${row.id}`}
                       />
                     </TableCell>
-                    <TableCell className="font-medium">
-                      {row.divisions?.name || "—"}
-                      <div className="sm:hidden text-xs text-muted-foreground mt-0.5">
-                        {row.categories?.name || "—"}
-                      </div>
-                    </TableCell>
-                    <TableCell className="hidden sm:table-cell">{row.categories?.name || "—"}</TableCell>
+                    <TableCell className="font-medium">{row.divisions?.name || "—"}</TableCell>
+                    <TableCell>{row.categories?.name || "—"}</TableCell>
                     <TableCell className="max-w-[280px]">
                       <div className="line-clamp-2 text-sm">{row.content}</div>
                     </TableCell>
