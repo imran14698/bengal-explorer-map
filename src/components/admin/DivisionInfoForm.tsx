@@ -264,8 +264,8 @@ const DivisionInfoForm = () => {
     <div className="space-y-8">
       {/* Form */}
       <div className="rounded-lg border border-border bg-card p-4 sm:p-6">
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="font-heading text-lg font-bold text-foreground">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <h3 className="font-heading text-base sm:text-lg font-bold text-foreground">
             {editingId ? "Edit Division Info" : "Add Division Info"}
           </h3>
           {editingId && (
@@ -274,7 +274,7 @@ const DivisionInfoForm = () => {
             </Button>
           )}
         </div>
-        <form onSubmit={handleSubmit} className="space-y-4 max-w-lg">
+        <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-lg">
           <div className="space-y-2">
             <Label>Division</Label>
             <Select value={divisionId} onValueChange={setDivisionId}>
@@ -404,17 +404,17 @@ const DivisionInfoForm = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[50px]">
+                <TableHead className="w-[44px]">
                   <Checkbox
                     checked={allPageSelected}
                     onCheckedChange={toggleSelectAll}
                     aria-label="Select all"
                   />
                 </TableHead>
-                <TableHead className="w-[140px]">Division</TableHead>
-                <TableHead className="w-[140px]">Category</TableHead>
-                <TableHead>Content</TableHead>
-                <TableHead className="w-[100px] text-right">Actions</TableHead>
+                <TableHead className="min-w-[110px]">Division</TableHead>
+                <TableHead className="hidden sm:table-cell min-w-[110px]">Category</TableHead>
+                <TableHead className="min-w-[200px]">Content</TableHead>
+                <TableHead className="w-[90px] text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -434,9 +434,16 @@ const DivisionInfoForm = () => {
                         aria-label={`Select row ${row.id}`}
                       />
                     </TableCell>
-                    <TableCell className="font-medium">{row.divisions?.name || "—"}</TableCell>
-                    <TableCell>{row.categories?.name || "—"}</TableCell>
-                    <TableCell className="max-w-xs truncate">{row.content}</TableCell>
+                    <TableCell className="font-medium">
+                      {row.divisions?.name || "—"}
+                      <div className="sm:hidden text-xs text-muted-foreground mt-0.5">
+                        {row.categories?.name || "—"}
+                      </div>
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell">{row.categories?.name || "—"}</TableCell>
+                    <TableCell className="max-w-[280px]">
+                      <div className="line-clamp-2 text-sm">{row.content}</div>
+                    </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
                         <Button variant="ghost" size="icon" onClick={() => handleEdit(row)}>
