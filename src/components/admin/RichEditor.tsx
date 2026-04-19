@@ -9,6 +9,7 @@ import TextAlign from "@tiptap/extension-text-align";
 import { TextStyle } from "@tiptap/extension-text-style";
 import { Color } from "@tiptap/extension-color";
 import { FontFamily } from "@tiptap/extension-font-family";
+import { FontSize } from "@tiptap/extension-font-size";
 import Highlight from "@tiptap/extension-highlight";
 import { Table } from "@tiptap/extension-table";
 import TableRow from "@tiptap/extension-table-row";
@@ -28,18 +29,35 @@ import {
 import { cn } from "@/lib/utils";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useFonts, BANGLA_PRESETS, ENGLISH_PRESETS } from "@/hooks/useFonts";
+import { ensureFontLink } from "@/lib/fontLoader";
 
-/** Inject a Google Fonts <link> on demand for any family used in the editor. */
-function ensureFontLink(family: string, weights = "400;500;600;700") {
-  const id = `editor-font-${family.replace(/\s+/g, "-")}`;
-  if (document.getElementById(id)) return;
-  const fam = family.trim().replace(/\s+/g, "+");
-  const link = document.createElement("link");
-  link.id = id;
-  link.rel = "stylesheet";
-  link.href = `https://fonts.googleapis.com/css2?family=${fam}:wght@${weights}&display=swap`;
-  document.head.appendChild(link);
-}
+const FONT_SIZES = ["12px", "14px", "16px", "18px", "24px", "32px"];
+
+const FontSizePicker = ({ editor }: { editor: Editor }) => {
+  const current = (editor.getAttributes("textStyle").fontSize as string | undefined) || "";
+  const handleChange = (val: string) => {
+    if (val === "__default__") {
+      editor.chain().focus().unsetFontSize().run();
+      return;
+    }
+    editor.chain().focus().setFontSize(val).run();
+  };
+  return (
+    <Select value={current || "__default__"} onValueChange={handleChange}>
+      <SelectTrigger className="h-8 w-[80px] text-xs" title="Font size">
+        <SelectValue placeholder="Size" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="__default__">Default</SelectItem>
+        {FONT_SIZES.map((s) => (
+          <SelectItem key={s} value={s}>
+            <span style={{ fontSize: s }}>{s}</span>
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+};
 
 const FontFamilyPicker = ({ editor }: { editor: Editor }) => {
   const { fonts } = useFonts();
@@ -182,6 +200,7 @@ const Toolbar = ({ editor, onUploadImage }: { editor: Editor; onUploadImage?: (f
   return (
     <div className="flex flex-wrap items-center gap-0.5 rounded-t-md border border-border bg-muted/40 p-1.5">
       <FontFamilyPicker editor={editor} />
+      <FontSizePicker editor={editor} />
       <Separator orientation="vertical" className="mx-1 h-6" />
       <TB title="Bold" active={editor.isActive("bold")} onClick={() => editor.chain().focus().toggleBold().run()}><Bold className="h-4 w-4" /></TB>
       <TB title="Italic" active={editor.isActive("italic")} onClick={() => editor.chain().focus().toggleItalic().run()}><Italic className="h-4 w-4" /></TB>
@@ -245,6 +264,7 @@ const RichEditor = ({ value, onChange, onUploadImage, placeholder }: RichEditorP
       TextAlign.configure({ types: ["heading", "paragraph"] }),
       TextStyle,
       FontFamily.configure({ types: ["textStyle"] }),
+      FontSize.configure({ types: ["textStyle"] }),
       Color,
       Highlight.configure({ multicolor: false }),
       Table.configure({ resizable: true }),
