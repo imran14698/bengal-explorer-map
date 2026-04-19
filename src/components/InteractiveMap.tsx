@@ -102,6 +102,24 @@ const InteractiveMap = ({ onDivisionSelect, selectedDivision }: InteractiveMapPr
             </motion.g>
           );
         })}
+
+        {/* Bay of Bengal label */}
+        <text
+          x="900"
+          y="2010"
+          textAnchor="middle"
+          dominantBaseline="middle"
+          className="pointer-events-none select-none font-display"
+          style={{
+            fontSize: 52,
+            fontWeight: 700,
+            fill: "#1e3a5f",
+            fontStyle: "italic",
+            letterSpacing: "0.08em",
+          }}
+        >
+          Bay of Bengal
+        </text>
       </svg>
     </div>
   );
