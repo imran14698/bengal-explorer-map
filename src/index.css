@@ -98,15 +98,31 @@
     --font-english-heading: "Plus Jakarta Sans";
     --font-bangla-body: "Noto Sans Bengali";
     --font-bangla-heading: "Noto Sans Bengali";
+
+    /* Typography scale (admin-tunable) */
+    --type-scale: 1;          /* multiplier for base font-size */
+    --type-leading: 1.55;     /* body line-height */
+    --type-weight-body: 400;
+    --type-weight-heading: 700;
   }
 
   * {
     @apply border-border;
   }
 
+  html {
+    font-size: calc(16px * var(--type-scale));
+  }
+
   body {
     @apply bg-background text-foreground transition-colors duration-300;
     font-family: var(--font-english-body), Inter, sans-serif;
+    font-weight: var(--type-weight-body);
+    line-height: var(--type-leading);
+  }
+
+  h1, h2, h3, h4, h5, h6, .font-heading {
+    font-weight: var(--type-weight-heading);
   }
 
   /* Bangla text — anywhere lang="bn" is set, swap to the configured Bangla font. */
