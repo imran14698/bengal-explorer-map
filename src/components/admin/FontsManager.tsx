@@ -40,11 +40,13 @@ function ensurePreviewLink(family: string, weights = "400;700") {
 }
 
 const RoleEditor = ({ role, label, sample, bangla }: { role: FontRole; label: string; sample: string; bangla: boolean }) => {
-  const { fonts, saveFont } = useFonts();
+  const { fonts, saveFont, resetRole } = useFonts();
   const current = fonts[role];
   const presets = bangla ? BANGLA_PRESETS : ENGLISH_PRESETS;
+  const isDefault = current.family === DEFAULT_FONTS[role].family;
 
   const [saving, setSaving] = useState<string | null>(null);
+  const [resetting, setResetting] = useState(false);
   const [customFamily, setCustomFamily] = useState("");
   const [customWeights, setCustomWeights] = useState("400;500;600;700");
   const [customUrl, setCustomUrl] = useState("");
@@ -63,6 +65,18 @@ const RoleEditor = ({ role, label, sample, bangla }: { role: FontRole; label: st
       toast({ title: "Save failed", description: err.message, variant: "destructive" });
     } finally {
       setSaving(null);
+    }
+  };
+
+  const handleResetRole = async () => {
+    setResetting(true);
+    try {
+      await resetRole(role);
+      toast({ title: "Reset", description: `${label} restored to ${DEFAULT_FONTS[role].family}` });
+    } catch (err: any) {
+      toast({ title: "Reset failed", description: err.message, variant: "destructive" });
+    } finally {
+      setResetting(false);
     }
   };
 
@@ -85,11 +99,24 @@ const RoleEditor = ({ role, label, sample, bangla }: { role: FontRole; label: st
   return (
     <Card className="p-5 space-y-5">
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div>
-          <h3 className="font-heading text-lg font-bold">{label}</h3>
-          <p className="text-xs text-muted-foreground">
-            Current: <span className="font-medium text-foreground">{current.family}</span>
-          </p>
+        <div className="flex items-start gap-3">
+          <div>
+            <h3 className="font-heading text-lg font-bold">{label}</h3>
+            <p className="text-xs text-muted-foreground">
+              Current: <span className="font-medium text-foreground">{current.family}</span>
+              {isDefault && <span className="ml-2 text-[10px] uppercase tracking-wider">(default)</span>}
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleResetRole}
+            disabled={resetting || isDefault}
+            title={`Reset ${label} to ${DEFAULT_FONTS[role].family}`}
+          >
+            {resetting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCcw className="h-3.5 w-3.5" />}
+            <span className="ml-1 text-xs">Reset</span>
+          </Button>
         </div>
         <div
           className="rounded-lg border border-border bg-muted/30 px-4 py-3 text-2xl"
