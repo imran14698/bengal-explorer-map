@@ -12,7 +12,8 @@ const Index = () => {
     <div className="flex min-h-screen flex-col bg-background font-body">
       <Navbar />
 
-      <main className="container flex-1 py-12">
+      <main className="flex-1 bg-[#f0f3f1] dark:bg-background">
+        <div className="container py-12">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -38,6 +39,7 @@ const Index = () => {
         >
           <InteractiveMap selectedDivision={selectedDivision} onDivisionSelect={setSelectedDivision} />
         </motion.div>
+        </div>
       </main>
 
       <DivisionInfoPanel divisionId={selectedDivision} onClose={() => setSelectedDivision(null)} />
