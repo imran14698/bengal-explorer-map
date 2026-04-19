@@ -79,12 +79,39 @@ interface FontsContextType {
   loading: boolean;
   refresh: () => Promise<void>;
   saveFont: (role: FontRole, cfg: FontConfig) => Promise<void>;
+  resetToDefaults: () => Promise<void>;
 }
 
 const FontsContext = createContext<FontsContextType | undefined>(undefined);
 
+const CACHE_KEY = "lov:font-settings:v1";
+
+function readCache(): FontSettings | null {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    const roles: FontRole[] = ["bangla_body", "bangla_heading", "english_body", "english_heading"];
+    const next: FontSettings = { ...DEFAULT_FONTS };
+    roles.forEach((r) => {
+      if (parsed?.[r]?.family) next[r] = parsed[r];
+    });
+    return next;
+  } catch {
+    return null;
+  }
+}
+
+function writeCache(s: FontSettings) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(s));
+  } catch {
+    /* ignore quota / privacy mode */
+  }
+}
+
 export const FontsProvider = ({ children }: { children: ReactNode }) => {
-  const [fonts, setFonts] = useState<FontSettings>(DEFAULT_FONTS);
+  const [fonts, setFonts] = useState<FontSettings>(() => readCache() || DEFAULT_FONTS);
   const [loading, setLoading] = useState(true);
 
   const apply = useCallback((s: FontSettings) => {
@@ -108,17 +135,19 @@ export const FontsProvider = ({ children }: { children: ReactNode }) => {
       });
       setFonts(next);
       apply(next);
+      writeCache(next);
     } catch (err) {
-      // Table may not exist yet — fall back to defaults silently.
-      apply(DEFAULT_FONTS);
+      // Table may not exist yet — fall back to cached/defaults silently.
+      const cached = readCache();
+      apply(cached || DEFAULT_FONTS);
     } finally {
       setLoading(false);
     }
   }, [apply]);
 
   useEffect(() => {
-    // Apply defaults immediately to avoid FOUT, then fetch overrides.
-    apply(DEFAULT_FONTS);
+    // Apply cached (or default) fonts immediately to avoid FOUT, then fetch overrides.
+    apply(readCache() || DEFAULT_FONTS);
     refresh();
   }, [apply, refresh]);
 
@@ -131,12 +160,27 @@ export const FontsProvider = ({ children }: { children: ReactNode }) => {
       const next = { ...fonts, [role]: cfg };
       setFonts(next);
       apply(next);
+      writeCache(next);
     },
     [fonts, apply]
   );
 
+  const resetToDefaults = useCallback(async () => {
+    const roles: FontRole[] = ["bangla_body", "bangla_heading", "english_body", "english_heading"];
+    const rows = roles.map((r) => ({
+      key: r,
+      value: DEFAULT_FONTS[r] as any,
+      updated_at: new Date().toISOString(),
+    }));
+    const { error } = await supabase.from("site_settings").upsert(rows, { onConflict: "key" });
+    if (error) throw error;
+    setFonts(DEFAULT_FONTS);
+    apply(DEFAULT_FONTS);
+    writeCache(DEFAULT_FONTS);
+  }, [apply]);
+
   return (
-    <FontsContext.Provider value={{ fonts, loading, refresh, saveFont }}>
+    <FontsContext.Provider value={{ fonts, loading, refresh, saveFont, resetToDefaults }}>
       {children}
     </FontsContext.Provider>
   );
