@@ -116,17 +116,17 @@ const Blog = () => {
     <div className="flex min-h-screen flex-col bg-background font-body">
       <Navbar />
 
-      <main className="container flex-1 py-12">
+      <main className="container flex-1 py-8 sm:py-12">
         <div className="mx-auto max-w-4xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="mb-10 flex flex-col gap-5 md:flex-row md:items-end md:justify-between"
+            className="mb-8 sm:mb-10 flex flex-col gap-5 md:flex-row md:items-end md:justify-between"
           >
             <div>
-              <h1 className="font-heading text-4xl font-extrabold tracking-tight text-foreground">{t.heading}</h1>
-              <p className="mt-2 text-muted-foreground">{t.subtitle}</p>
+              <h1 className="font-heading text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">{t.heading}</h1>
+              <p className="mt-2 text-sm sm:text-base text-muted-foreground">{t.subtitle}</p>
             </div>
 
             <div className="flex items-center gap-2 w-full md:w-auto">
