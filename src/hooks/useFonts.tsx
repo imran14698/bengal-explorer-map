@@ -98,17 +98,31 @@ function applyCssVars(s: FontSettings) {
   root.style.setProperty("--font-english-heading", `"${s.english_heading.family}"`);
 }
 
+function applyScaleVars(t: TypeScale) {
+  const root = document.documentElement;
+  root.style.setProperty("--type-scale", String(t.scale));
+  root.style.setProperty("--type-leading", String(t.leading));
+  root.style.setProperty("--type-weight-body", String(t.weightBody));
+  root.style.setProperty("--type-weight-heading", String(t.weightHeading));
+}
+
 interface FontsContextType {
   fonts: FontSettings;
+  scale: TypeScale;
   loading: boolean;
   refresh: () => Promise<void>;
   saveFont: (role: FontRole, cfg: FontConfig) => Promise<void>;
+  resetRole: (role: FontRole) => Promise<void>;
   resetToDefaults: () => Promise<void>;
+  saveScale: (t: TypeScale) => Promise<void>;
+  resetScale: () => Promise<void>;
 }
 
 const FontsContext = createContext<FontsContextType | undefined>(undefined);
 
 const CACHE_KEY = "lov:font-settings:v1";
+const SCALE_CACHE_KEY = "lov:type-scale:v1";
+const SCALE_SETTING_KEY = "type_scale";
 
 function readCache(): FontSettings | null {
   try {
@@ -134,8 +148,29 @@ function writeCache(s: FontSettings) {
   }
 }
 
+function readScaleCache(): TypeScale | null {
+  try {
+    const raw = localStorage.getItem(SCALE_CACHE_KEY);
+    if (!raw) return null;
+    const p = JSON.parse(raw);
+    if (typeof p?.scale !== "number") return null;
+    return { ...DEFAULT_TYPE_SCALE, ...p };
+  } catch {
+    return null;
+  }
+}
+
+function writeScaleCache(t: TypeScale) {
+  try {
+    localStorage.setItem(SCALE_CACHE_KEY, JSON.stringify(t));
+  } catch {
+    /* ignore */
+  }
+}
+
 export const FontsProvider = ({ children }: { children: ReactNode }) => {
   const [fonts, setFonts] = useState<FontSettings>(() => readCache() || DEFAULT_FONTS);
+  const [scale, setScale] = useState<TypeScale>(() => readScaleCache() || DEFAULT_TYPE_SCALE);
   const [loading, setLoading] = useState(true);
 
   const apply = useCallback((s: FontSettings) => {
@@ -148,30 +183,37 @@ export const FontsProvider = ({ children }: { children: ReactNode }) => {
       const { data, error } = await supabase
         .from("site_settings")
         .select("key, value")
-        .in("key", ["bangla_body", "bangla_heading", "english_body", "english_heading"]);
+        .in("key", ["bangla_body", "bangla_heading", "english_body", "english_heading", SCALE_SETTING_KEY]);
       if (error) throw error;
 
       const next: FontSettings = { ...DEFAULT_FONTS };
+      let nextScale: TypeScale = DEFAULT_TYPE_SCALE;
       (data || []).forEach((row: any) => {
-        if (row.key in next && row.value?.family) {
+        if (row.key === SCALE_SETTING_KEY && row.value && typeof row.value.scale === "number") {
+          nextScale = { ...DEFAULT_TYPE_SCALE, ...row.value };
+        } else if (row.key in next && row.value?.family) {
           next[row.key as FontRole] = row.value as FontConfig;
         }
       });
       setFonts(next);
+      setScale(nextScale);
       apply(next);
+      applyScaleVars(nextScale);
       writeCache(next);
+      writeScaleCache(nextScale);
     } catch (err) {
-      // Table may not exist yet — fall back to cached/defaults silently.
       const cached = readCache();
+      const cachedScale = readScaleCache();
       apply(cached || DEFAULT_FONTS);
+      applyScaleVars(cachedScale || DEFAULT_TYPE_SCALE);
     } finally {
       setLoading(false);
     }
   }, [apply]);
 
   useEffect(() => {
-    // Apply cached (or default) fonts immediately to avoid FOUT, then fetch overrides.
     apply(readCache() || DEFAULT_FONTS);
+    applyScaleVars(readScaleCache() || DEFAULT_TYPE_SCALE);
     refresh();
   }, [apply, refresh]);
 
@@ -189,6 +231,13 @@ export const FontsProvider = ({ children }: { children: ReactNode }) => {
     [fonts, apply]
   );
 
+  const resetRole = useCallback(
+    async (role: FontRole) => {
+      await saveFont(role, DEFAULT_FONTS[role]);
+    },
+    [saveFont]
+  );
+
   const resetToDefaults = useCallback(async () => {
     const roles: FontRole[] = ["bangla_body", "bangla_heading", "english_body", "english_heading"];
     const rows = roles.map((r) => ({
@@ -203,8 +252,27 @@ export const FontsProvider = ({ children }: { children: ReactNode }) => {
     writeCache(DEFAULT_FONTS);
   }, [apply]);
 
+  const saveScale = useCallback(async (t: TypeScale) => {
+    const { error } = await supabase
+      .from("site_settings")
+      .upsert(
+        { key: SCALE_SETTING_KEY, value: t as any, updated_at: new Date().toISOString() },
+        { onConflict: "key" }
+      );
+    if (error) throw error;
+    setScale(t);
+    applyScaleVars(t);
+    writeScaleCache(t);
+  }, []);
+
+  const resetScale = useCallback(async () => {
+    await saveScale(DEFAULT_TYPE_SCALE);
+  }, [saveScale]);
+
   return (
-    <FontsContext.Provider value={{ fonts, loading, refresh, saveFont, resetToDefaults }}>
+    <FontsContext.Provider
+      value={{ fonts, scale, loading, refresh, saveFont, resetRole, resetToDefaults, saveScale, resetScale }}
+    >
       {children}
     </FontsContext.Provider>
   );
