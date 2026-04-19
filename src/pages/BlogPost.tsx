@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useLanguage, pickLang, type Lang } from "@/hooks/useLanguage";
+import { preloadFontsFromHtml } from "@/lib/fontLoader";
 
 interface Post {
   id: string;
@@ -92,6 +93,10 @@ const BlogPost = () => {
   const fellBack =
     (lang === "bn" && (!post.title_bn?.trim() || !post.content_bn?.trim())) ||
     (lang === "en" && (!post.title_en?.trim() || !post.content_en?.trim()));
+
+  useEffect(() => {
+    preloadFontsFromHtml(content);
+  }, [content]);
 
   return (
     <div className="flex min-h-screen flex-col bg-background font-body">
