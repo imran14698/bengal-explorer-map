@@ -929,15 +929,15 @@
      inkscape:groupmode="layer"
      id="layer8"
      inkscape:label="blueback">
-    <rect
-       style="opacity:1;fill:#c6ecff;fill-opacity:1;fill-rule:nonzero;stroke:url(#Strips1_1);stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="rect3811"
-       width="1589.9801"
-       height="2161.7266"
-       x="-24.243662"
-       y="-15.645226" />
-    <rect
-       style="opacity:1;fill:url(#pattern17183);fill-opacity:1;fill-rule:nonzero;stroke:url(#pattern17185);stroke-width:1.99999976;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     <rect
+        style="opacity:1;fill:#f0f3f1;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+        id="rect3811"
+        width="1589.9801"
+        height="2161.7266"
+        x="-24.243662"
+        y="-15.645226" />
+     <rect
+        style="opacity:0;fill:none;fill-opacity:0;fill-rule:nonzero;stroke:none;stroke-width:1.99999976;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0"
        id="rect17171"
        width="1592.0005"
        height="2149.6047"
