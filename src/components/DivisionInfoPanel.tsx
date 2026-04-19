@@ -201,7 +201,7 @@ const DivisionInfoPanel = ({ divisionId, onClose }: DivisionInfoPanelProps) => {
                   variant="ghost"
                   size="sm"
                   onClick={() => setLang((p) => (p === "en" ? "bn" : "en"))}
-                  className="rounded-full border border-white/20 bg-white/10 backdrop-blur-md hover:bg-white/20 text-xs sm:text-sm"
+                  className="rounded-full border border-border/50 bg-muted/60 text-foreground backdrop-blur-md hover:bg-muted dark:border-white/20 dark:bg-white/10 dark:hover:bg-white/20 text-xs sm:text-sm"
                 >
                   <Languages className="mr-1 h-4 w-4" />
                   {t.switchTo}
@@ -209,7 +209,7 @@ const DivisionInfoPanel = ({ divisionId, onClose }: DivisionInfoPanelProps) => {
                 <button
                   onClick={onClose}
                   aria-label={t.close}
-                  className="rounded-full border border-white/20 bg-white/10 p-2 text-foreground backdrop-blur-md transition-all hover:bg-white/20 hover:scale-105"
+                  className="rounded-full border border-border/50 bg-muted/60 p-2 text-foreground backdrop-blur-md transition-all hover:bg-muted hover:scale-105 dark:border-white/20 dark:bg-white/10 dark:hover:bg-white/20"
                 >
                   <X className="h-5 w-5" />
                 </button>
