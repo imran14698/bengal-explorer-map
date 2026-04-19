@@ -481,7 +481,7 @@ const DivisionInfoForm = () => {
             <p className="text-xs sm:text-sm text-muted-foreground">
               Showing {(safePage - 1) * PAGE_SIZE + 1}–{Math.min(safePage * PAGE_SIZE, filteredRows.length)} of {filteredRows.length}
             </p>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 flex-wrap">
               <Button
                 variant="outline"
                 size="sm"
