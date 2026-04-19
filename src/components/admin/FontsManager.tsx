@@ -3,16 +3,21 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/use-toast";
-import { Check, Loader2, Type } from "lucide-react";
+import { Check, Loader2, RotateCcw, Type } from "lucide-react";
 import {
   useFonts,
   BANGLA_PRESETS,
   ENGLISH_PRESETS,
+  SCALE_PRESETS,
+  DEFAULT_TYPE_SCALE,
+  DEFAULT_FONTS,
   parseGoogleFontsUrl,
   type FontRole,
   type FontConfig,
+  type TypeScale,
 } from "@/hooks/useFonts";
 
 const ROLES: { role: FontRole; label: string; sample: string; bangla: boolean }[] = [
@@ -35,11 +40,13 @@ function ensurePreviewLink(family: string, weights = "400;700") {
 }
 
 const RoleEditor = ({ role, label, sample, bangla }: { role: FontRole; label: string; sample: string; bangla: boolean }) => {
-  const { fonts, saveFont } = useFonts();
+  const { fonts, saveFont, resetRole } = useFonts();
   const current = fonts[role];
   const presets = bangla ? BANGLA_PRESETS : ENGLISH_PRESETS;
+  const isDefault = current.family === DEFAULT_FONTS[role].family;
 
   const [saving, setSaving] = useState<string | null>(null);
+  const [resetting, setResetting] = useState(false);
   const [customFamily, setCustomFamily] = useState("");
   const [customWeights, setCustomWeights] = useState("400;500;600;700");
   const [customUrl, setCustomUrl] = useState("");
@@ -58,6 +65,18 @@ const RoleEditor = ({ role, label, sample, bangla }: { role: FontRole; label: st
       toast({ title: "Save failed", description: err.message, variant: "destructive" });
     } finally {
       setSaving(null);
+    }
+  };
+
+  const handleResetRole = async () => {
+    setResetting(true);
+    try {
+      await resetRole(role);
+      toast({ title: "Reset", description: `${label} restored to ${DEFAULT_FONTS[role].family}` });
+    } catch (err: any) {
+      toast({ title: "Reset failed", description: err.message, variant: "destructive" });
+    } finally {
+      setResetting(false);
     }
   };
 
@@ -80,11 +99,24 @@ const RoleEditor = ({ role, label, sample, bangla }: { role: FontRole; label: st
   return (
     <Card className="p-5 space-y-5">
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div>
-          <h3 className="font-heading text-lg font-bold">{label}</h3>
-          <p className="text-xs text-muted-foreground">
-            Current: <span className="font-medium text-foreground">{current.family}</span>
-          </p>
+        <div className="flex items-start gap-3">
+          <div>
+            <h3 className="font-heading text-lg font-bold">{label}</h3>
+            <p className="text-xs text-muted-foreground">
+              Current: <span className="font-medium text-foreground">{current.family}</span>
+              {isDefault && <span className="ml-2 text-[10px] uppercase tracking-wider">(default)</span>}
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleResetRole}
+            disabled={resetting || isDefault}
+            title={`Reset ${label} to ${DEFAULT_FONTS[role].family}`}
+          >
+            {resetting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCcw className="h-3.5 w-3.5" />}
+            <span className="ml-1 text-xs">Reset</span>
+          </Button>
         </div>
         <div
           className="rounded-lg border border-border bg-muted/30 px-4 py-3 text-2xl"
@@ -171,6 +203,196 @@ const RoleEditor = ({ role, label, sample, bangla }: { role: FontRole; label: st
   );
 };
 
+const ScaleEditor = () => {
+  const { scale, saveScale, resetScale } = useFonts();
+  const [draft, setDraft] = useState<TypeScale>(scale);
+  const [saving, setSaving] = useState(false);
+  const [resetting, setResetting] = useState(false);
+
+  useEffect(() => {
+    setDraft(scale);
+  }, [scale.scale, scale.leading, scale.weightBody, scale.weightHeading]);
+
+  const dirty =
+    draft.scale !== scale.scale ||
+    draft.leading !== scale.leading ||
+    draft.weightBody !== scale.weightBody ||
+    draft.weightHeading !== scale.weightHeading;
+
+  const applyPreset = async (t: TypeScale) => {
+    setSaving(true);
+    try {
+      await saveScale(t);
+      toast({ title: "Typography updated" });
+    } catch (err: any) {
+      toast({ title: "Save failed", description: err.message, variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const saveDraft = async () => {
+    setSaving(true);
+    try {
+      await saveScale(draft);
+      toast({ title: "Typography saved" });
+    } catch (err: any) {
+      toast({ title: "Save failed", description: err.message, variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleReset = async () => {
+    setResetting(true);
+    try {
+      await resetScale();
+      toast({ title: "Typography reset to defaults" });
+    } catch (err: any) {
+      toast({ title: "Reset failed", description: err.message, variant: "destructive" });
+    } finally {
+      setResetting(false);
+    }
+  };
+
+  return (
+    <Card className="p-5 space-y-5">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div>
+          <h3 className="font-heading text-lg font-bold">Typography Scale</h3>
+          <p className="text-xs text-muted-foreground">
+            Global font size, line-height, and weight emphasis. Applies to entire site.
+          </p>
+        </div>
+        <Button variant="ghost" size="sm" onClick={handleReset} disabled={resetting}>
+          {resetting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCcw className="h-3.5 w-3.5" />}
+          <span className="ml-1 text-xs">Reset</span>
+        </Button>
+      </div>
+
+      <div>
+        <Label className="text-xs uppercase tracking-wider text-muted-foreground">Quick presets</Label>
+        <div className="mt-2 grid grid-cols-3 gap-2">
+          {SCALE_PRESETS.map((p) => {
+            const active =
+              scale.scale === p.scale.scale &&
+              scale.leading === p.scale.leading &&
+              scale.weightBody === p.scale.weightBody &&
+              scale.weightHeading === p.scale.weightHeading;
+            return (
+              <button
+                key={p.id}
+                onClick={() => applyPreset(p.scale)}
+                disabled={saving}
+                className={`rounded-lg border p-3 text-left transition-all hover:border-primary hover:bg-muted/40 ${
+                  active ? "border-primary bg-primary/5" : "border-border"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">{p.label}</span>
+                  {active && <Check className="h-3.5 w-3.5 text-primary" />}
+                </div>
+                <div className="text-[10px] text-muted-foreground mt-1">
+                  {Math.round(p.scale.scale * 100)}% · lh {p.scale.leading}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="border-t border-border pt-4 space-y-5">
+        <Label className="text-xs uppercase tracking-wider text-muted-foreground">Fine-tune</Label>
+
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-sm">
+            <span>Font size</span>
+            <span className="font-mono text-xs text-muted-foreground">
+              {Math.round(draft.scale * 100)}% ({(16 * draft.scale).toFixed(1)}px)
+            </span>
+          </div>
+          <Slider
+            min={0.85}
+            max={1.2}
+            step={0.0125}
+            value={[draft.scale]}
+            onValueChange={([v]) => setDraft((d) => ({ ...d, scale: v }))}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-sm">
+            <span>Line height</span>
+            <span className="font-mono text-xs text-muted-foreground">{draft.leading.toFixed(2)}</span>
+          </div>
+          <Slider
+            min={1.2}
+            max={1.9}
+            step={0.05}
+            value={[draft.leading]}
+            onValueChange={([v]) => setDraft((d) => ({ ...d, leading: v }))}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-sm">
+            <span>Body weight</span>
+            <span className="font-mono text-xs text-muted-foreground">{draft.weightBody}</span>
+          </div>
+          <Slider
+            min={300}
+            max={600}
+            step={100}
+            value={[draft.weightBody]}
+            onValueChange={([v]) => setDraft((d) => ({ ...d, weightBody: v }))}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-sm">
+            <span>Heading weight</span>
+            <span className="font-mono text-xs text-muted-foreground">{draft.weightHeading}</span>
+          </div>
+          <Slider
+            min={500}
+            max={900}
+            step={100}
+            value={[draft.weightHeading]}
+            onValueChange={([v]) => setDraft((d) => ({ ...d, weightHeading: v }))}
+          />
+        </div>
+
+        <div className="flex items-center justify-end gap-2">
+          <Button variant="ghost" size="sm" onClick={() => setDraft(scale)} disabled={!dirty || saving}>
+            Cancel
+          </Button>
+          <Button size="sm" onClick={saveDraft} disabled={!dirty || saving}>
+            {saving && <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />}
+            Save changes
+          </Button>
+        </div>
+      </div>
+
+      <div
+        className="rounded-lg border border-border bg-muted/30 p-4"
+        style={{
+          fontSize: `${16 * draft.scale}px`,
+          lineHeight: draft.leading,
+          fontWeight: draft.weightBody,
+        }}
+      >
+        <div className="font-heading mb-2" style={{ fontWeight: draft.weightHeading, fontSize: "1.6em" }}>
+          Live preview heading
+        </div>
+        <p>
+          The quick brown fox jumps over the lazy dog. এটি একটি নমুনা বাংলা বাক্য যেখানে স্কেল ও লাইন
+          হাইট পরিবর্তন দেখা যাচ্ছে।
+        </p>
+      </div>
+    </Card>
+  );
+};
+
 const FontsManager = () => {
   const { resetToDefaults } = useFonts();
   const [resetting, setResetting] = useState(false);
@@ -202,7 +424,7 @@ const FontsManager = () => {
           </div>
           <Button variant="outline" size="sm" onClick={handleReset} disabled={resetting}>
             {resetting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            Reset to defaults
+            Reset all fonts
           </Button>
         </div>
       </Card>
@@ -214,12 +436,18 @@ const FontsManager = () => {
               {r.label}
             </TabsTrigger>
           ))}
+          <TabsTrigger value="__scale" className="flex-1 min-w-[110px] text-xs sm:text-sm">
+            Scale
+          </TabsTrigger>
         </TabsList>
         {ROLES.map((r) => (
           <TabsContent key={r.role} value={r.role} className="mt-5">
             <RoleEditor {...r} />
           </TabsContent>
         ))}
+        <TabsContent value="__scale" className="mt-5">
+          <ScaleEditor />
+        </TabsContent>
       </Tabs>
     </div>
   );
