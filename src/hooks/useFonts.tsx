@@ -13,6 +13,30 @@ export interface FontConfig {
 
 export type FontSettings = Record<FontRole, FontConfig>;
 
+export interface TypeScale {
+  /** font-size multiplier on html (default 1) */
+  scale: number;
+  /** body line-height (default 1.55) */
+  leading: number;
+  /** body weight, e.g. 400 */
+  weightBody: number;
+  /** heading weight, e.g. 700 */
+  weightHeading: number;
+}
+
+export const DEFAULT_TYPE_SCALE: TypeScale = {
+  scale: 1,
+  leading: 1.55,
+  weightBody: 400,
+  weightHeading: 700,
+};
+
+export const SCALE_PRESETS: { id: "tighter" | "normal" | "loose"; label: string; scale: TypeScale }[] = [
+  { id: "tighter", label: "Tighter", scale: { scale: 0.9375, leading: 1.4, weightBody: 400, weightHeading: 700 } },
+  { id: "normal", label: "Normal", scale: DEFAULT_TYPE_SCALE },
+  { id: "loose", label: "Loose", scale: { scale: 1.0625, leading: 1.7, weightBody: 400, weightHeading: 700 } },
+];
+
 export const DEFAULT_FONTS: FontSettings = {
   bangla_body: { family: "Noto Sans Bengali", weights: "400;500;600;700" },
   bangla_heading: { family: "Noto Sans Bengali", weights: "600;700;800" },
