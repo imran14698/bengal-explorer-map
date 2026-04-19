@@ -172,15 +172,39 @@ const RoleEditor = ({ role, label, sample, bangla }: { role: FontRole; label: st
 };
 
 const FontsManager = () => {
+  const { resetToDefaults } = useFonts();
+  const [resetting, setResetting] = useState(false);
+
+  const handleReset = async () => {
+    if (!confirm("Reset all fonts to defaults (Noto Sans Bengali / Inter / Plus Jakarta Sans)?")) return;
+    setResetting(true);
+    try {
+      await resetToDefaults();
+      toast({ title: "Fonts reset", description: "All fonts restored to defaults." });
+    } catch (err: any) {
+      toast({ title: "Reset failed", description: err.message, variant: "destructive" });
+    } finally {
+      setResetting(false);
+    }
+  };
+
   return (
     <div className="space-y-5">
       <Card className="p-5">
-        <h2 className="font-heading text-xl font-bold">Font Settings</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Choose Bangla and English fonts for headings and body. Bangla fonts only apply to Bangla text
-          (elements with <code className="rounded bg-muted px-1 py-0.5 text-xs">lang="bn"</code>).
-          Changes save instantly and apply site-wide.
-        </p>
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <h2 className="font-heading text-xl font-bold">Font Settings</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Choose Bangla and English fonts for headings and body. Bangla fonts only apply to Bangla text
+              (elements with <code className="rounded bg-muted px-1 py-0.5 text-xs">lang="bn"</code>).
+              Changes save instantly and apply site-wide.
+            </p>
+          </div>
+          <Button variant="outline" size="sm" onClick={handleReset} disabled={resetting}>
+            {resetting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            Reset to defaults
+          </Button>
+        </div>
       </Card>
 
       <Tabs defaultValue="bangla_heading">
