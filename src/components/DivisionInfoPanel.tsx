@@ -205,7 +205,7 @@ const DivisionInfoPanel = ({ divisionId, onClose }: DivisionInfoPanelProps) => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setLang((p) => (p === "en" ? "bn" : "en"))}
+                  onClick={() => { const next = lang === "en" ? "bn" : "en"; setLang(next); setGlobalLang(next); }}
                   className="rounded-full border border-border/50 bg-muted/60 text-foreground backdrop-blur-md hover:bg-foreground hover:text-background dark:border-white/20 dark:bg-white/10 dark:hover:bg-white dark:hover:text-black text-xs sm:text-sm"
                 >
                   <Languages className="mr-1 h-4 w-4" />
