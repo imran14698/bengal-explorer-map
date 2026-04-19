@@ -181,27 +181,27 @@ const BlogEditor = () => {
     <div className="space-y-6">
       <BlogBulkImport onImported={fetchPosts} />
 
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <h3 className="font-heading text-lg font-semibold text-foreground">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between mb-4">
+        <h3 className="font-heading text-base sm:text-lg font-semibold text-foreground">
           Blog Posts ({filteredPosts.length})
         </h3>
-        <div className="flex items-center gap-3">
-          <div className="relative">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
+          <div className="relative flex-1 sm:flex-initial">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search blogs..."
-              className="w-48 pl-9"
+              className="w-full sm:w-48 pl-9"
             />
           </div>
           <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) resetForm(); }}>
             <DialogTrigger asChild>
-              <Button size="sm" onClick={openCreate}>
+              <Button size="sm" onClick={openCreate} className="shrink-0">
                 <Plus className="mr-2 h-4 w-4" /> New Post
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[92vh] overflow-y-auto">
+            <DialogContent className="max-w-4xl w-[calc(100vw-1.5rem)] max-h-[92vh] overflow-y-auto p-4 sm:p-6">
               <DialogHeader>
                 <DialogTitle className="font-heading">{editing ? "Edit Post" : "New Post"}</DialogTitle>
               </DialogHeader>
@@ -313,46 +313,54 @@ const BlogEditor = () => {
         </p>
       ) : (
         <>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Title (EN)</TableHead>
-                <TableHead>Title (BN)</TableHead>
-                <TableHead>Slug</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {paginatedPosts.map((post) => (
-                <TableRow key={post.id}>
-                  <TableCell className="font-medium">{post.title_en}</TableCell>
-                  <TableCell className="text-foreground/80">
-                    {post.title_bn || <span className="text-muted-foreground italic text-xs">—</span>}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground text-xs">{post.slug_en}</TableCell>
-                  <TableCell className="text-xs text-muted-foreground">
-                    {new Date(post.created_at).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(post)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete(post.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
+          <div className="rounded-lg border border-border overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="min-w-[160px]">Title (EN)</TableHead>
+                  <TableHead className="hidden sm:table-cell min-w-[140px]">Title (BN)</TableHead>
+                  <TableHead className="hidden md:table-cell">Slug</TableHead>
+                  <TableHead className="hidden md:table-cell">Date</TableHead>
+                  <TableHead className="text-right min-w-[100px]">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {paginatedPosts.map((post) => (
+                  <TableRow key={post.id}>
+                    <TableCell className="font-medium">
+                      <div className="line-clamp-2">{post.title_en}</div>
+                      <div className="sm:hidden mt-1 text-xs text-muted-foreground">
+                        {post.title_bn ? <span className="line-clamp-1">{post.title_bn}</span> : null}
+                        <span className="block">{new Date(post.created_at).toLocaleDateString()}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell text-foreground/80">
+                      {post.title_bn || <span className="text-muted-foreground italic text-xs">—</span>}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell text-muted-foreground text-xs">{post.slug_en}</TableCell>
+                    <TableCell className="hidden md:table-cell text-xs text-muted-foreground">
+                      {new Date(post.created_at).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(post)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete(post.id)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
 
           {totalPages > 1 && (
-            <div className="flex items-center justify-between pt-4">
-              <p className="text-sm text-muted-foreground">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-4">
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 Showing {(safePage - 1) * PAGE_SIZE + 1}–{Math.min(safePage * PAGE_SIZE, filteredPosts.length)} of {filteredPosts.length}
               </p>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 flex-wrap">
                 <Button variant="outline" size="sm" disabled={safePage <= 1} onClick={() => setCurrentPage((p) => p - 1)}>
                   <ChevronLeft className="h-4 w-4" />
                 </Button>

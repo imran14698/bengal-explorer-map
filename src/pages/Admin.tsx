@@ -72,15 +72,18 @@ const Admin = () => {
         </div>
       </header>
 
-      <main className="container flex-1 px-4 py-6 sm:px-6 sm:py-8">
+      <main className="container flex-1 px-3 py-5 sm:px-6 sm:py-8">
         <Tabs defaultValue="categories">
-          <TabsList className="mb-6 flex w-full flex-wrap h-auto gap-1">
-            <TabsTrigger value="categories" className="flex-1 min-w-[80px] text-xs sm:text-sm">Categories</TabsTrigger>
-            <TabsTrigger value="division-info" className="flex-1 min-w-[80px] text-xs sm:text-sm">Division Info</TabsTrigger>
-            <TabsTrigger value="bulk-import" className="flex-1 min-w-[80px] text-xs sm:text-sm">Bulk Import</TabsTrigger>
-            <TabsTrigger value="blog" className="flex-1 min-w-[80px] text-xs sm:text-sm">Blog</TabsTrigger>
-            <TabsTrigger value="fonts" className="flex-1 min-w-[80px] text-xs sm:text-sm">Fonts</TabsTrigger>
-          </TabsList>
+          {/* Horizontally-scrollable tab strip on mobile, normal on >=sm */}
+          <div className="-mx-3 sm:mx-0 mb-5 sm:mb-6 overflow-x-auto scrollbar-slim">
+            <TabsList className="inline-flex w-max min-w-full sm:w-full sm:flex sm:flex-wrap h-auto gap-1 px-3 sm:px-0">
+              <TabsTrigger value="categories" className="shrink-0 sm:flex-1 sm:min-w-[80px] text-xs sm:text-sm">Categories</TabsTrigger>
+              <TabsTrigger value="division-info" className="shrink-0 sm:flex-1 sm:min-w-[80px] text-xs sm:text-sm">Division Info</TabsTrigger>
+              <TabsTrigger value="bulk-import" className="shrink-0 sm:flex-1 sm:min-w-[80px] text-xs sm:text-sm">Bulk Import</TabsTrigger>
+              <TabsTrigger value="blog" className="shrink-0 sm:flex-1 sm:min-w-[80px] text-xs sm:text-sm">Blog</TabsTrigger>
+              <TabsTrigger value="fonts" className="shrink-0 sm:flex-1 sm:min-w-[80px] text-xs sm:text-sm">Fonts</TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="categories">
             <CategoriesCrud />
