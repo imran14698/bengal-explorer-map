@@ -1,14 +1,16 @@
 import { Link, useLocation } from "react-router-dom";
-import { MapPin, Sun, Moon } from "lucide-react";
+import { MapPin, Sun, Moon, Menu } from "lucide-react";
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/hooks/useTheme";
 import { useLanguage } from "@/hooks/useLanguage";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader, SheetClose } from "@/components/ui/sheet";
 
 const Navbar = () => {
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const { lang, toggleLang } = useLanguage();
 
@@ -17,6 +19,11 @@ const Navbar = () => {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // Close mobile sheet on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -46,12 +53,13 @@ const Navbar = () => {
           >
             <MapPin className="h-4 w-4 text-primary-foreground" />
           </motion.div>
-          <span className="font-heading text-lg font-bold tracking-tight text-foreground">
+          <span className="font-heading text-base sm:text-lg font-bold tracking-tight text-foreground">
             Bangladesh InfoMap
           </span>
         </Link>
 
-        <nav className="flex items-center gap-1">
+        {/* Desktop nav */}
+        <nav className="hidden md:flex items-center gap-1">
           {navItems.map(({ path, label }) => (
             <Link
               key={path}
@@ -95,6 +103,67 @@ const Navbar = () => {
             {theme === "light" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
           </motion.button>
         </nav>
+
+        {/* Mobile burger */}
+        <div className="flex md:hidden items-center gap-1">
+          <button
+            onClick={toggleTheme}
+            className="flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:text-foreground hover:bg-muted/60"
+            aria-label="Toggle theme"
+          >
+            {theme === "light" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+          </button>
+          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+            <SheetTrigger asChild>
+              <button
+                className="flex h-9 w-9 items-center justify-center rounded-xl text-foreground transition-colors hover:bg-muted/60"
+                aria-label="Open menu"
+              >
+                <Menu className="h-5 w-5" />
+              </button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[280px] sm:w-[320px] p-0">
+              <SheetHeader className="px-6 pt-6 pb-4 border-b border-border/40">
+                <SheetTitle className="flex items-center gap-3">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+                    <MapPin className="h-4 w-4 text-primary-foreground" />
+                  </span>
+                  <span className="font-heading text-base font-bold">Bangladesh InfoMap</span>
+                </SheetTitle>
+              </SheetHeader>
+
+              <nav className="flex flex-col p-4 gap-1">
+                {navItems.map(({ path, label }) => (
+                  <SheetClose asChild key={path}>
+                    <Link
+                      to={path}
+                      className={cn(
+                        "px-4 py-3 text-base font-medium rounded-lg transition-colors",
+                        isActive(path)
+                          ? "bg-primary/10 text-primary"
+                          : "text-foreground hover:bg-muted/60"
+                      )}
+                    >
+                      {label}
+                    </Link>
+                  </SheetClose>
+                ))}
+              </nav>
+
+              <div className="px-4 mt-2 pt-4 border-t border-border/40">
+                <button
+                  onClick={toggleLang}
+                  className="w-full flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-muted/60 transition-colors"
+                >
+                  <span>Language</span>
+                  <span className="text-xs font-semibold text-primary">
+                    {lang === "en" ? "EN → বাংলা" : "বাংলা → EN"}
+                  </span>
+                </button>
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
     </motion.header>
   );
