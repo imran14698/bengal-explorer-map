@@ -242,6 +242,7 @@ const RichEditor = ({ value, onChange, onUploadImage, placeholder }: RichEditorP
       }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
       TextStyle,
+      FontFamily.configure({ types: ["textStyle"] }),
       Color,
       Highlight.configure({ multicolor: false }),
       Table.configure({ resizable: true }),
