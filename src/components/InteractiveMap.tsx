@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { divisionShapes } from "./divisionShapes";
+import { useTheme } from "@/hooks/useTheme";
 
 interface InteractiveMapProps {
   onDivisionSelect: (divisionId: string | null) => void;
@@ -9,6 +10,11 @@ interface InteractiveMapProps {
 
 const InteractiveMap = ({ onDivisionSelect, selectedDivision }: InteractiveMapProps) => {
   const [hoveredDivision, setHoveredDivision] = useState<string | null>(null);
+  const { theme } = useTheme();
+  const baseMapSrc =
+    theme === "dark"
+      ? "/assets/bangladesh_regions_map_dark.svg"
+      : "/assets/bangladesh_regions_map_light.svg";
 
   return (
     <div className="flex items-center justify-center p-4">
@@ -19,7 +25,8 @@ const InteractiveMap = ({ onDivisionSelect, selectedDivision }: InteractiveMapPr
       >
         {/* Base map (rivers, ocean, neighbouring countries, region labels) */}
         <image
-          href="/assets/bangladesh_regions_map.svg"
+          href={baseMapSrc}
+          key={baseMapSrc}
           x="0"
           y="0"
           width="1530"
