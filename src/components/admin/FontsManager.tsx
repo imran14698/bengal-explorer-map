@@ -272,7 +272,7 @@ const ScaleEditor = () => {
 
       <div>
         <Label className="text-xs uppercase tracking-wider text-muted-foreground">Quick presets</Label>
-        <div className="mt-2 grid grid-cols-3 gap-2">
+        <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2">
           {SCALE_PRESETS.map((p) => {
             const active =
               scale.scale === p.scale.scale &&
