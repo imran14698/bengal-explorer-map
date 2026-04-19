@@ -141,6 +141,11 @@ const BlogEditor = () => {
     }
     setSaving(true);
     const payload = {
+      // Legacy NOT NULL columns — mirror English values for backward compatibility
+      title: titleEn.trim(),
+      slug: slugEn.trim(),
+      content: contentEn,
+      // Bilingual columns
       title_en: titleEn.trim(),
       title_bn: titleBn.trim() || null,
       slug_en: slugEn.trim(),
