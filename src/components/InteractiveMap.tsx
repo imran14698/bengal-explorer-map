@@ -20,7 +20,7 @@ const InteractiveMap = ({ onDivisionSelect, selectedDivision }: InteractiveMapPr
     <div className="flex items-center justify-center p-4">
       <svg
         viewBox="0 0 1530 2138"
-        className="w-full max-w-2xl drop-shadow-2xl"
+        className="w-full max-w-2xl"
         xmlns="http://www.w3.org/2000/svg"
       >
         {/* Base map (rivers, ocean, neighbouring countries, region labels) */}
