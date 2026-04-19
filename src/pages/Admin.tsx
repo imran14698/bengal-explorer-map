@@ -1,20 +1,30 @@
+import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { MapPin, LogOut, Sun, Moon } from "lucide-react";
+import { LogOut, Sun, Moon } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTheme } from "@/hooks/useTheme";
+import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import CategoriesCrud from "@/components/admin/CategoriesCrud";
 import DivisionInfoForm from "@/components/admin/DivisionInfoForm";
 import BulkImport from "@/components/admin/BulkImport";
 import BlogEditor from "@/components/admin/BlogEditor";
 import FontsManager from "@/components/admin/FontsManager";
-import Footer from "@/components/Footer";
+import AdminSidebar, { type AdminSection } from "@/components/admin/AdminSidebar";
+
+const SECTION_TITLES: Record<AdminSection, string> = {
+  categories: "Categories",
+  "division-info": "Division Info",
+  "bulk-import": "Bulk Import",
+  blog: "Blog Posts",
+  fonts: "Fonts",
+};
 
 const Admin = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const [section, setSection] = useState<AdminSection>("categories");
 
   if (loading) {
     return (
@@ -43,68 +53,49 @@ const Admin = () => {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <header className="border-b border-border bg-card/80 backdrop-blur-sm">
-        <div className="container flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg bg-primary">
-              <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-primary-foreground" />
+    <SidebarProvider defaultOpen>
+      <div className="flex min-h-screen w-full bg-background">
+        <AdminSidebar active={section} onChange={setSection} />
+
+        <SidebarInset className="flex flex-col min-w-0">
+          {/* Sticky header */}
+          <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b border-border bg-card/80 px-3 backdrop-blur-sm sm:px-6">
+            <SidebarTrigger className="shrink-0" />
+            <div className="min-w-0 flex-1">
+              <h1 className="font-heading text-base sm:text-lg font-bold text-foreground truncate">
+                {SECTION_TITLES[section]}
+              </h1>
+              <p className="text-[11px] sm:text-xs text-muted-foreground truncate">{user.email}</p>
             </div>
-            <div className="min-w-0">
-              <h1 className="font-heading text-base sm:text-xl font-bold text-foreground">Admin Panel</h1>
-              <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+            <div className="flex items-center gap-2 shrink-0">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={toggleTheme}
+                aria-label="Toggle theme"
+                className="h-9 w-9"
+              >
+                {theme === "light" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+              </Button>
+              <Button variant="outline" size="sm" onClick={signOut}>
+                <LogOut className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Sign Out</span>
+              </Button>
             </div>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={toggleTheme}
-              aria-label="Toggle theme"
-              className="h-9 w-9"
-            >
-              {theme === "light" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-            </Button>
-            <Button variant="outline" size="sm" onClick={signOut}>
-              <LogOut className="mr-1 sm:mr-2 h-4 w-4" /> <span className="hidden sm:inline">Sign Out</span>
-            </Button>
-          </div>
-        </div>
-      </header>
+          </header>
 
-      <main className="container flex-1 px-3 py-5 sm:px-6 sm:py-8">
-        <Tabs defaultValue="categories">
-          {/* Horizontally-scrollable tab strip on mobile, normal on >=sm */}
-          <div className="-mx-3 sm:mx-0 mb-5 sm:mb-6 overflow-x-auto scrollbar-slim">
-            <TabsList className="inline-flex w-max min-w-full sm:w-full sm:flex sm:flex-wrap h-auto gap-1 px-3 sm:px-0">
-              <TabsTrigger value="categories" className="shrink-0 sm:flex-1 sm:min-w-[80px] text-xs sm:text-sm">Categories</TabsTrigger>
-              <TabsTrigger value="division-info" className="shrink-0 sm:flex-1 sm:min-w-[80px] text-xs sm:text-sm">Division Info</TabsTrigger>
-              <TabsTrigger value="bulk-import" className="shrink-0 sm:flex-1 sm:min-w-[80px] text-xs sm:text-sm">Bulk Import</TabsTrigger>
-              <TabsTrigger value="blog" className="shrink-0 sm:flex-1 sm:min-w-[80px] text-xs sm:text-sm">Blog</TabsTrigger>
-              <TabsTrigger value="fonts" className="shrink-0 sm:flex-1 sm:min-w-[80px] text-xs sm:text-sm">Fonts</TabsTrigger>
-            </TabsList>
-          </div>
-
-          <TabsContent value="categories">
-            <CategoriesCrud />
-          </TabsContent>
-          <TabsContent value="division-info">
-            <DivisionInfoForm />
-          </TabsContent>
-          <TabsContent value="bulk-import">
-            <BulkImport />
-          </TabsContent>
-          <TabsContent value="blog">
-            <BlogEditor />
-          </TabsContent>
-          <TabsContent value="fonts">
-            <FontsManager />
-          </TabsContent>
-        </Tabs>
-      </main>
-
-      <Footer />
-    </div>
+          <main className="flex-1 px-3 py-5 sm:px-6 sm:py-8 overflow-x-hidden">
+            <div className="max-w-6xl mx-auto">
+              {section === "categories" && <CategoriesCrud />}
+              {section === "division-info" && <DivisionInfoForm />}
+              {section === "bulk-import" && <BulkImport />}
+              {section === "blog" && <BlogEditor />}
+              {section === "fonts" && <FontsManager />}
+            </div>
+          </main>
+        </SidebarInset>
+      </div>
+    </SidebarProvider>
   );
 };
 
