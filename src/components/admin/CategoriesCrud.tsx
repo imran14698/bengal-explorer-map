@@ -73,14 +73,14 @@ const CategoriesCrud = () => {
       <h3 className="font-heading text-lg font-bold text-foreground">Manage Categories</h3>
 
       {/* Add new */}
-      <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-2">
         <Input
           placeholder="New category name"
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleAdd()}
         />
-        <Button onClick={handleAdd} size="sm">
+        <Button onClick={handleAdd} size="sm" className="sm:shrink-0">
           <Plus className="mr-1 h-4 w-4" /> Add
         </Button>
       </div>
@@ -99,7 +99,7 @@ const CategoriesCrud = () => {
           {categories.map((cat) => (
             <div
               key={cat.id}
-              className="flex items-center justify-between rounded-lg border border-border bg-secondary/30 px-4 py-2"
+              className="flex items-center justify-between gap-2 rounded-lg border border-border bg-secondary/30 px-3 sm:px-4 py-2"
             >
               {editingId === cat.id ? (
                 <div className="flex flex-1 items-center gap-2">
@@ -118,8 +118,8 @@ const CategoriesCrud = () => {
                 </div>
               ) : (
                 <>
-                  <span className="text-sm font-medium text-foreground">{cat.name}</span>
-                  <div className="flex gap-1">
+                  <span className="text-sm font-medium text-foreground truncate">{cat.name}</span>
+                  <div className="flex gap-1 shrink-0">
                     <Button
                       size="icon"
                       variant="ghost"
