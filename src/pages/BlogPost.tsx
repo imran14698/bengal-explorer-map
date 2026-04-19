@@ -105,7 +105,7 @@ const BlogPost = () => {
     <div className="flex min-h-screen flex-col bg-background font-body">
       <Navbar />
 
-      <main className="container flex-1 py-12">
+      <main className="container flex-1 py-8 sm:py-12">
         <motion.article
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -128,7 +128,7 @@ const BlogPost = () => {
               transition={{ duration: 0.5, delay: 0.1 }}
               src={post.image_url}
               alt={title}
-              className="mb-8 h-72 w-full rounded-2xl object-cover shadow-lg"
+              className="mb-6 sm:mb-8 h-48 sm:h-64 md:h-72 w-full rounded-2xl object-cover shadow-lg"
             />
           )}
 
@@ -140,7 +140,7 @@ const BlogPost = () => {
             })}
           </p>
 
-          <h1 className="mb-4 font-heading text-4xl font-extrabold leading-tight tracking-tight text-foreground">{title}</h1>
+          <h1 className="mb-4 font-heading text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight tracking-tight text-foreground break-words">{title}</h1>
 
           {fellBack && (
             <p className="mb-6 rounded-lg border border-dashed border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">

@@ -13,20 +13,20 @@ const Index = () => {
       <Navbar />
 
       <main className="flex-1 bg-[#f0f3f1] dark:bg-background">
-        <div className="container py-12">
+        <div className="container py-8 sm:py-12">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: "easeOut" }}
-          className="mb-10 mx-auto max-w-2xl text-center"
+          className="mb-8 sm:mb-10 mx-auto max-w-2xl text-center px-2"
         >
-          <h1 className="font-heading text-5xl font-extrabold tracking-tight text-foreground">
+          <h1 className="font-heading text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground">
             Explore{" "}
             <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
               Bangladesh
             </span>
           </h1>
-          <p className="mt-4 text-lg text-muted-foreground leading-relaxed">
+          <p className="mt-3 sm:mt-4 text-base sm:text-lg text-muted-foreground leading-relaxed">
             Hover over a division to highlight it. Click to explore detailed information
             about geography, culture, and more.
           </p>

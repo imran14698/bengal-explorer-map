@@ -132,35 +132,62 @@ const Navbar = () => {
                 </SheetTitle>
               </SheetHeader>
 
-              <nav className="flex flex-col p-4 gap-1">
-                {navItems.map(({ path, label }) => (
-                  <SheetClose asChild key={path}>
-                    <Link
-                      to={path}
-                      className={cn(
-                        "px-4 py-3 text-base font-medium rounded-lg transition-colors",
-                        isActive(path)
-                          ? "bg-primary/10 text-primary"
-                          : "text-foreground hover:bg-muted/60"
-                      )}
+              <AnimatePresence>
+                {mobileOpen && (
+                  <>
+                    <motion.nav
+                      initial="hidden"
+                      animate="visible"
+                      className="flex flex-col p-4 gap-1"
+                      variants={{
+                        hidden: {},
+                        visible: { transition: { staggerChildren: 0.06, delayChildren: 0.05 } },
+                      }}
                     >
-                      {label}
-                    </Link>
-                  </SheetClose>
-                ))}
-              </nav>
+                      {navItems.map(({ path, label }) => (
+                        <motion.div
+                          key={path}
+                          variants={{
+                            hidden: { opacity: 0, x: 24 },
+                            visible: { opacity: 1, x: 0, transition: { duration: 0.28, ease: "easeOut" } },
+                          }}
+                        >
+                          <SheetClose asChild>
+                            <Link
+                              to={path}
+                              className={cn(
+                                "block px-4 py-3 text-base font-medium rounded-lg transition-colors",
+                                isActive(path)
+                                  ? "bg-primary/10 text-primary"
+                                  : "text-foreground hover:bg-muted/60"
+                              )}
+                            >
+                              {label}
+                            </Link>
+                          </SheetClose>
+                        </motion.div>
+                      ))}
+                    </motion.nav>
 
-              <div className="px-4 mt-2 pt-4 border-t border-border/40">
-                <button
-                  onClick={toggleLang}
-                  className="w-full flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-muted/60 transition-colors"
-                >
-                  <span>Language</span>
-                  <span className="text-xs font-semibold text-primary">
-                    {lang === "en" ? "EN → বাংলা" : "বাংলা → EN"}
-                  </span>
-                </button>
-              </div>
+                    <motion.div
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.05 + navItems.length * 0.06, duration: 0.3 }}
+                      className="px-4 mt-2 pt-4 border-t border-border/40"
+                    >
+                      <button
+                        onClick={toggleLang}
+                        className="w-full flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-muted/60 transition-colors"
+                      >
+                        <span>Language</span>
+                        <span className="text-xs font-semibold text-primary">
+                          {lang === "en" ? "EN → বাংলা" : "বাংলা → EN"}
+                        </span>
+                      </button>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
             </SheetContent>
           </Sheet>
         </div>
