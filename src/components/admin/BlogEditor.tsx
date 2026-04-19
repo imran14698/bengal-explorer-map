@@ -313,14 +313,54 @@ const BlogEditor = () => {
         </p>
       ) : (
         <>
-          <div className="rounded-lg border border-border overflow-x-auto">
+          {/* Mobile cards */}
+          <div className="md:hidden space-y-3">
+            {paginatedPosts.map((post) => (
+              <div
+                key={post.id}
+                className="rounded-xl border border-border bg-card p-4 space-y-2"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <h4 className="font-heading text-sm font-semibold text-foreground line-clamp-2">
+                      {post.title_en}
+                    </h4>
+                    {post.title_bn && (
+                      <p className="text-xs text-foreground/70 mt-0.5 line-clamp-1" lang="bn">
+                        {post.title_bn}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex shrink-0 gap-0.5">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(post)}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete(post.id)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
+                  <code className="truncate rounded bg-muted px-1.5 py-0.5 font-mono">
+                    /{post.slug_en}
+                  </code>
+                  <span className="shrink-0">
+                    {new Date(post.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop table */}
+          <div className="hidden md:block rounded-lg border border-border overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead className="min-w-[160px]">Title (EN)</TableHead>
-                  <TableHead className="hidden sm:table-cell min-w-[140px]">Title (BN)</TableHead>
-                  <TableHead className="hidden md:table-cell">Slug</TableHead>
-                  <TableHead className="hidden md:table-cell">Date</TableHead>
+                  <TableHead className="min-w-[140px]">Title (BN)</TableHead>
+                  <TableHead>Slug</TableHead>
+                  <TableHead>Date</TableHead>
                   <TableHead className="text-right min-w-[100px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -329,16 +369,12 @@ const BlogEditor = () => {
                   <TableRow key={post.id}>
                     <TableCell className="font-medium">
                       <div className="line-clamp-2">{post.title_en}</div>
-                      <div className="sm:hidden mt-1 text-xs text-muted-foreground">
-                        {post.title_bn ? <span className="line-clamp-1">{post.title_bn}</span> : null}
-                        <span className="block">{new Date(post.created_at).toLocaleDateString()}</span>
-                      </div>
                     </TableCell>
-                    <TableCell className="hidden sm:table-cell text-foreground/80">
+                    <TableCell className="text-foreground/80">
                       {post.title_bn || <span className="text-muted-foreground italic text-xs">—</span>}
                     </TableCell>
-                    <TableCell className="hidden md:table-cell text-muted-foreground text-xs">{post.slug_en}</TableCell>
-                    <TableCell className="hidden md:table-cell text-xs text-muted-foreground">
+                    <TableCell className="text-muted-foreground text-xs">{post.slug_en}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
                       {new Date(post.created_at).toLocaleDateString()}
                     </TableCell>
                     <TableCell className="text-right">
