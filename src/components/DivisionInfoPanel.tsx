@@ -250,7 +250,7 @@ const DivisionInfoPanel = ({ divisionId, onClose }: DivisionInfoPanelProps) => {
                     {data.map((cat) => (
                       <div
                         key={cat.categoryName}
-                        className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-md"
+                        className="rounded-xl border border-border/50 bg-muted/60 dark:border-white/10 dark:bg-white/5 p-4 backdrop-blur-md"
                       >
                         <h3 className="mb-2 text-sm font-bold uppercase tracking-wider text-primary">
                           {cat.categoryName}
