@@ -198,7 +198,7 @@ const Toolbar = ({ editor, onUploadImage }: { editor: Editor; onUploadImage?: (f
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-0.5 rounded-t-md border border-border bg-muted/40 p-1.5">
+    <div className="flex flex-wrap items-center gap-0.5 rounded-t-md border border-border bg-muted/40 p-1.5 overflow-x-auto scrollbar-slim">
       <FontFamilyPicker editor={editor} />
       <FontSizePicker editor={editor} />
       <Separator orientation="vertical" className="mx-1 h-6" />
