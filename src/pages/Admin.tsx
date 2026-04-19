@@ -9,6 +9,7 @@ import CategoriesCrud from "@/components/admin/CategoriesCrud";
 import DivisionInfoForm from "@/components/admin/DivisionInfoForm";
 import BulkImport from "@/components/admin/BulkImport";
 import BlogEditor from "@/components/admin/BlogEditor";
+import FontsManager from "@/components/admin/FontsManager";
 import Footer from "@/components/Footer";
 
 const Admin = () => {
@@ -78,6 +79,7 @@ const Admin = () => {
             <TabsTrigger value="division-info" className="flex-1 min-w-[80px] text-xs sm:text-sm">Division Info</TabsTrigger>
             <TabsTrigger value="bulk-import" className="flex-1 min-w-[80px] text-xs sm:text-sm">Bulk Import</TabsTrigger>
             <TabsTrigger value="blog" className="flex-1 min-w-[80px] text-xs sm:text-sm">Blog</TabsTrigger>
+            <TabsTrigger value="fonts" className="flex-1 min-w-[80px] text-xs sm:text-sm">Fonts</TabsTrigger>
           </TabsList>
 
           <TabsContent value="categories">
@@ -91,6 +93,9 @@ const Admin = () => {
           </TabsContent>
           <TabsContent value="blog">
             <BlogEditor />
+          </TabsContent>
+          <TabsContent value="fonts">
+            <FontsManager />
           </TabsContent>
         </Tabs>
       </main>
