@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { useLanguage, type Lang } from "@/hooks/useLanguage";
 
 import barishalMap from "@/assets/divisions/barishal.png";
 import chattogramMap from "@/assets/divisions/chattogram.png";
@@ -63,7 +64,7 @@ interface CategoryInfo {
   items: { en: string; bn: string | null }[];
 }
 
-type Lang = "en" | "bn";
+// Lang type comes from useLanguage hook
 
 const uiText = {
   en: {
@@ -83,7 +84,11 @@ const uiText = {
 const DivisionInfoPanel = ({ divisionId, onClose }: DivisionInfoPanelProps) => {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<CategoryInfo[]>([]);
-  const [lang, setLang] = useState<Lang>("en");
+  const { lang: globalLang, setLang: setGlobalLang } = useLanguage();
+  const [lang, setLang] = useState<Lang>(globalLang);
+
+  // Keep panel lang in sync if global changes
+  useEffect(() => { setLang(globalLang); }, [globalLang]);
 
   useEffect(() => {
     if (!divisionId) {
@@ -200,7 +205,7 @@ const DivisionInfoPanel = ({ divisionId, onClose }: DivisionInfoPanelProps) => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setLang((p) => (p === "en" ? "bn" : "en"))}
+                  onClick={() => { const next = lang === "en" ? "bn" : "en"; setLang(next); setGlobalLang(next); }}
                   className="rounded-full border border-border/50 bg-muted/60 text-foreground backdrop-blur-md hover:bg-foreground hover:text-background dark:border-white/20 dark:bg-white/10 dark:hover:bg-white dark:hover:text-black text-xs sm:text-sm"
                 >
                   <Languages className="mr-1 h-4 w-4" />

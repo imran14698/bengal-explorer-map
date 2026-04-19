@@ -4,11 +4,13 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/hooks/useTheme";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const Navbar = () => {
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const { lang, toggleLang } = useLanguage();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -73,10 +75,21 @@ const Navbar = () => {
           ))}
 
           <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={toggleLang}
+            className="ml-2 flex h-9 items-center justify-center rounded-xl px-3 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+            aria-label="Toggle language"
+            title={lang === "en" ? "Switch to Bangla" : "Switch to English"}
+          >
+            {lang === "en" ? "বাংলা" : "EN"}
+          </motion.button>
+
+          <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={toggleTheme}
-            className="ml-2 flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:text-foreground hover:bg-muted/60"
+            className="ml-1 flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:text-foreground hover:bg-muted/60"
             aria-label="Toggle theme"
           >
             {theme === "light" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
