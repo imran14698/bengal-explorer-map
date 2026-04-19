@@ -17,6 +17,7 @@ import {
   Trash2, Pencil, Plus, Search, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import RichEditor from "./RichEditor";
+import BlogBulkImport from "./BlogBulkImport";
 
 interface Blog {
   id: string;
@@ -182,7 +183,9 @@ const BlogEditor = () => {
   };
 
   return (
-    <div>
+    <div className="space-y-6">
+      <BlogBulkImport onImported={fetchPosts} />
+
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <h3 className="font-heading text-lg font-semibold text-foreground">
           Blog Posts ({filteredPosts.length})
