@@ -179,7 +179,7 @@ const DivisionInfoPanel = ({ divisionId, onClose }: DivisionInfoPanelProps) => {
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ type: "spring", stiffness: 280, damping: 28 }}
             onClick={(e) => e.stopPropagation()}
-            className="relative z-10 flex w-full max-w-6xl max-h-[90vh] flex-col overflow-hidden rounded-2xl border border-white/20 bg-white/10 dark:bg-white/5 shadow-2xl backdrop-blur-2xl"
+            className="relative z-10 flex w-full max-w-6xl max-h-[90vh] flex-col overflow-hidden rounded-2xl border border-border/40 bg-card/80 dark:bg-white/5 dark:border-white/20 shadow-2xl backdrop-blur-2xl"
             style={{
               boxShadow:
                 "0 25px 50px -12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2)",

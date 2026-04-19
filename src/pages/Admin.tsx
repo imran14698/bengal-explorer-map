@@ -2,8 +2,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { MapPin, LogOut } from "lucide-react";
+import { MapPin, LogOut, Sun, Moon } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTheme } from "@/hooks/useTheme";
 import CategoriesCrud from "@/components/admin/CategoriesCrud";
 import DivisionInfoForm from "@/components/admin/DivisionInfoForm";
 import BulkImport from "@/components/admin/BulkImport";
@@ -12,6 +13,7 @@ import Footer from "@/components/Footer";
 
 const Admin = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   if (loading) {
     return (
@@ -52,9 +54,20 @@ const Admin = () => {
               <p className="text-xs text-muted-foreground truncate">{user.email}</p>
             </div>
           </div>
-          <Button variant="outline" size="sm" onClick={signOut} className="shrink-0">
-            <LogOut className="mr-1 sm:mr-2 h-4 w-4" /> <span className="hidden sm:inline">Sign Out</span>
-          </Button>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={toggleTheme}
+              aria-label="Toggle theme"
+              className="h-9 w-9"
+            >
+              {theme === "light" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+            </Button>
+            <Button variant="outline" size="sm" onClick={signOut}>
+              <LogOut className="mr-1 sm:mr-2 h-4 w-4" /> <span className="hidden sm:inline">Sign Out</span>
+            </Button>
+          </div>
         </div>
       </header>
 
