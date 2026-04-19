@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { Navigate } from "react-router-dom";
+import { Navigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { LogOut, Sun, Moon } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -24,7 +24,23 @@ const SECTION_TITLES: Record<AdminSection, string> = {
 const Admin = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
-  const [section, setSection] = useState<AdminSection>("categories");
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const validSections: AdminSection[] = ["categories", "division-info", "bulk-import", "blog", "fonts"];
+  const paramSection = searchParams.get("section") as AdminSection | null;
+  const section: AdminSection =
+    paramSection && validSections.includes(paramSection) ? paramSection : "categories";
+
+  useEffect(() => {
+    if (!paramSection || !validSections.includes(paramSection as AdminSection)) {
+      setSearchParams({ section: "categories" }, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const setSection = (next: AdminSection) => {
+    setSearchParams({ section: next });
+  };
 
   if (loading) {
     return (
