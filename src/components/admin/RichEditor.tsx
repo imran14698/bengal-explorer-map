@@ -5,10 +5,10 @@ import Image from "@tiptap/extension-image";
 import LinkExt from "@tiptap/extension-link";
 import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
-import TextStyle from "@tiptap/extension-text-style";
+import { TextStyle } from "@tiptap/extension-text-style";
 import { Color } from "@tiptap/extension-color";
 import Highlight from "@tiptap/extension-highlight";
-import Table from "@tiptap/extension-table";
+import { Table } from "@tiptap/extension-table";
 import TableRow from "@tiptap/extension-table-row";
 import TableCell from "@tiptap/extension-table-cell";
 import TableHeader from "@tiptap/extension-table-header";
@@ -175,7 +175,7 @@ const RichEditor = ({ value, onChange, onUploadImage, placeholder }: RichEditorP
   useEffect(() => {
     if (!editor) return;
     if (value !== editor.getHTML()) {
-      editor.commands.setContent(value || "", false);
+      editor.commands.setContent(value || "");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, editor]);
