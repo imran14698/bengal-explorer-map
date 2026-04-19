@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useLanguage, pickLang, type Lang } from "@/hooks/useLanguage";
+import { preloadFontsFromHtml } from "@/lib/fontLoader";
 
 interface Post {
   id: string;
@@ -51,6 +52,13 @@ const BlogPost = () => {
     };
     void fetchPost();
   }, [slug]);
+
+  useEffect(() => {
+    if (post) {
+      preloadFontsFromHtml(post.content_en || "");
+      preloadFontsFromHtml(post.content_bn || "");
+    }
+  }, [post]);
 
   const switchLang = () => {
     const next: Lang = lang === "en" ? "bn" : "en";
