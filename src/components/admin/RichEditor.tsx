@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import * as React from "react";
 import { useEditor, EditorContent, Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
@@ -7,6 +8,7 @@ import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
 import { TextStyle } from "@tiptap/extension-text-style";
 import { Color } from "@tiptap/extension-color";
+import { FontFamily } from "@tiptap/extension-font-family";
 import Highlight from "@tiptap/extension-highlight";
 import { Table } from "@tiptap/extension-table";
 import TableRow from "@tiptap/extension-table-row";
@@ -24,6 +26,92 @@ import {
   Table as TableIcon, Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useFonts, BANGLA_PRESETS, ENGLISH_PRESETS } from "@/hooks/useFonts";
+
+/** Inject a Google Fonts <link> on demand for any family used in the editor. */
+function ensureFontLink(family: string, weights = "400;500;600;700") {
+  const id = `editor-font-${family.replace(/\s+/g, "-")}`;
+  if (document.getElementById(id)) return;
+  const fam = family.trim().replace(/\s+/g, "+");
+  const link = document.createElement("link");
+  link.id = id;
+  link.rel = "stylesheet";
+  link.href = `https://fonts.googleapis.com/css2?family=${fam}:wght@${weights}&display=swap`;
+  document.head.appendChild(link);
+}
+
+const FontFamilyPicker = ({ editor }: { editor: Editor }) => {
+  const { fonts } = useFonts();
+
+  // Build grouped list: site fonts (current) + Bangla presets + English presets, deduped.
+  const siteFonts = [
+    { family: fonts.bangla_heading.family, weights: fonts.bangla_heading.weights, group: "site" as const, label: "Bangla heading" },
+    { family: fonts.bangla_body.family, weights: fonts.bangla_body.weights, group: "site" as const, label: "Bangla body" },
+    { family: fonts.english_heading.family, weights: fonts.english_heading.weights, group: "site" as const, label: "English heading" },
+    { family: fonts.english_body.family, weights: fonts.english_body.weights, group: "site" as const, label: "English body" },
+  ];
+
+  // Preload all listed fonts so they render in the dropdown previews.
+  React.useEffect(() => {
+    siteFonts.forEach((f) => ensureFontLink(f.family, f.weights));
+    BANGLA_PRESETS.forEach((f) => ensureFontLink(f.family, f.weights));
+    ENGLISH_PRESETS.forEach((f) => ensureFontLink(f.family, f.weights));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fonts.bangla_heading.family, fonts.bangla_body.family, fonts.english_heading.family, fonts.english_body.family]);
+
+  const current = (editor.getAttributes("textStyle").fontFamily as string | undefined) || "";
+  // Strip surrounding quotes for matching
+  const currentFamily = current.replace(/^["']|["']$/g, "").split(",")[0].trim();
+
+  const handleChange = (val: string) => {
+    if (val === "__default__") {
+      editor.chain().focus().unsetFontFamily().run();
+      return;
+    }
+    ensureFontLink(val);
+    editor.chain().focus().setFontFamily(`"${val}", sans-serif`).run();
+  };
+
+  return (
+    <Select value={currentFamily || "__default__"} onValueChange={handleChange}>
+      <SelectTrigger className="h-8 w-[170px] text-xs" title="Font family">
+        <SelectValue placeholder="Font" />
+      </SelectTrigger>
+      <SelectContent className="max-h-80">
+        <SelectItem value="__default__">Default (theme)</SelectItem>
+        <SelectGroup>
+          <SelectLabel className="text-[10px] uppercase tracking-wider">Site fonts</SelectLabel>
+          {siteFonts.map((f, i) => (
+            <SelectItem key={`site-${i}-${f.family}`} value={f.family}>
+              <span style={{ fontFamily: `"${f.family}", sans-serif` }}>{f.family}</span>
+              <span className="ml-2 text-[10px] text-muted-foreground">{f.label}</span>
+            </SelectItem>
+          ))}
+        </SelectGroup>
+        <SelectGroup>
+          <SelectLabel className="text-[10px] uppercase tracking-wider">Bangla</SelectLabel>
+          {BANGLA_PRESETS.map((f) => (
+            <SelectItem key={`bn-${f.family}`} value={f.family}>
+              <span style={{ fontFamily: `"${f.family}", sans-serif` }} lang="bn">
+                {f.family} — অ আ ই
+              </span>
+            </SelectItem>
+          ))}
+        </SelectGroup>
+        <SelectGroup>
+          <SelectLabel className="text-[10px] uppercase tracking-wider">English</SelectLabel>
+          {ENGLISH_PRESETS.map((f) => (
+            <SelectItem key={`en-${f.family}`} value={f.family}>
+              <span style={{ fontFamily: `"${f.family}", sans-serif` }}>{f.family}</span>
+            </SelectItem>
+          ))}
+        </SelectGroup>
+      </SelectContent>
+    </Select>
+  );
+};
+
 
 interface RichEditorProps {
   value: string;
@@ -93,6 +181,8 @@ const Toolbar = ({ editor, onUploadImage }: { editor: Editor; onUploadImage?: (f
 
   return (
     <div className="flex flex-wrap items-center gap-0.5 rounded-t-md border border-border bg-muted/40 p-1.5">
+      <FontFamilyPicker editor={editor} />
+      <Separator orientation="vertical" className="mx-1 h-6" />
       <TB title="Bold" active={editor.isActive("bold")} onClick={() => editor.chain().focus().toggleBold().run()}><Bold className="h-4 w-4" /></TB>
       <TB title="Italic" active={editor.isActive("italic")} onClick={() => editor.chain().focus().toggleItalic().run()}><Italic className="h-4 w-4" /></TB>
       <TB title="Underline" active={editor.isActive("underline")} onClick={() => editor.chain().focus().toggleUnderline().run()}><UnderlineIcon className="h-4 w-4" /></TB>
@@ -154,6 +244,7 @@ const RichEditor = ({ value, onChange, onUploadImage, placeholder }: RichEditorP
       }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
       TextStyle,
+      FontFamily.configure({ types: ["textStyle"] }),
       Color,
       Highlight.configure({ multicolor: false }),
       Table.configure({ resizable: true }),
