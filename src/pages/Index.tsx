@@ -39,6 +39,7 @@ const Index = () => {
         >
           <InteractiveMap selectedDivision={selectedDivision} onDivisionSelect={setSelectedDivision} />
         </motion.div>
+        </div>
       </main>
 
       <DivisionInfoPanel divisionId={selectedDivision} onClose={() => setSelectedDivision(null)} />
