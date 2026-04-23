@@ -20,10 +20,10 @@ interface DivisionInfoPanelProps {
 
 const divisionNames: Record<string, { en: string; bn: string }> = {
   dhaka: { en: "Dhaka", bn: "ঢাকা" },
-  chattogram: { en: "Chattogram", bn: "চট্টগ্রাম" },
+  chattogram: { en: "Chittagong", bn: "চট্টগ্রাম" },
   rajshahi: { en: "Rajshahi", bn: "রাজশাহী" },
   khulna: { en: "Khulna", bn: "খুলনা" },
-  barishal: { en: "Barishal", bn: "বরিশাল" },
+  barishal: { en: "Barisal", bn: "বরিশাল" },
   sylhet: { en: "Sylhet", bn: "সিলেট" },
   rangpur: { en: "Rangpur", bn: "রংপুর" },
   mymensingh: { en: "Mymensingh", bn: "ময়মনসিংহ" },
