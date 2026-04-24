@@ -36,7 +36,7 @@ const cardVariants = {
 
 const ui = {
   en: {
-    heading: "Blog",
+    heading: "Stories",
     subtitle: "Stories, guides & insights about Bangladesh",
     search: "Search by title...",
     noMatch: "No matching articles",
@@ -44,7 +44,7 @@ const ui = {
     switchTo: "বাংলা",
   },
   bn: {
-    heading: "ব্লগ",
+    heading: "গল্প",
     subtitle: "বাংলাদেশ সম্পর্কে গল্প, গাইড ও তথ্য",
     search: "শিরোনাম দিয়ে খুঁজুন...",
     noMatch: "কোনো লেখা পাওয়া যায়নি",
