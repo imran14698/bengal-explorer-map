@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type MouseEvent } from "react";
 import { motion } from "framer-motion";
 import { divisionShapes } from "./divisionShapes";
 import { useTheme } from "@/hooks/useTheme";
@@ -10,19 +10,49 @@ interface InteractiveMapProps {
 
 const InteractiveMap = ({ onDivisionSelect, selectedDivision }: InteractiveMapProps) => {
   const [hoveredDivision, setHoveredDivision] = useState<string | null>(null);
+  const [tilt, setTilt] = useState({ rotateX: 0, rotateY: 0 });
   const { theme } = useTheme();
   const baseMapSrc =
     theme === "dark"
       ? "/assets/bangladesh_regions_map_dark.svg"
       : "/assets/bangladesh_regions_map_light.svg";
 
+  const handleMouseMove = (event: MouseEvent<HTMLDivElement>) => {
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const x = event.clientX - bounds.left;
+    const y = event.clientY - bounds.top;
+    const halfWidth = bounds.width / 2;
+    const halfHeight = bounds.height / 2;
+    const rotateY = ((x - halfWidth) / halfWidth) * 10;
+    const rotateX = -((y - halfHeight) / halfHeight) * 7;
+
+    setTilt({ rotateX, rotateY });
+  };
+
+  const handleMouseLeave = () => {
+    setTilt({ rotateX: 0, rotateY: 0 });
+  };
+
   return (
     <div className="flex items-center justify-center p-4">
-      <svg
-        viewBox="0 0 1530 2138"
+      <motion.div
         className="w-full max-w-2xl"
-        xmlns="http://www.w3.org/2000/svg"
+        style={{ perspective: 1200 }}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        animate={tilt}
+        transition={{ type: "spring", stiffness: 200, damping: 18 }}
       >
+        <motion.div
+          className="bg-white/70 dark:bg-slate-950/70 shadow-slate-900/10 overflow-hidden"
+          style={{ transformStyle: "preserve-3d" }}
+          animate={tilt}
+        >
+          <svg
+            viewBox="0 0 1530 2138"
+            className="w-full"
+            xmlns="http://www.w3.org/2000/svg"
+          >
         {/* Base map (rivers, ocean, neighbouring countries, region labels) */}
         <image
           href={baseMapSrc}
@@ -121,7 +151,9 @@ const InteractiveMap = ({ onDivisionSelect, selectedDivision }: InteractiveMapPr
           Bay of Bengal
         </text>
       </svg>
-    </div>
+    </motion.div>
+  </motion.div>
+</div>
   );
 };
 
