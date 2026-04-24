@@ -22,7 +22,7 @@ const Footer = () => {
 
           <div className="flex flex-wrap items-center gap-4 text-sm">
             <Link to="/" className="text-muted-foreground transition-colors hover:text-foreground">Map</Link>
-            <Link to="/blog" className="text-muted-foreground transition-colors hover:text-foreground">Blog</Link>
+            <Link to="/blog" className="text-muted-foreground transition-colors hover:text-foreground">Stories</Link>
             <Link to="/login" className="text-muted-foreground transition-colors hover:text-foreground">Admin</Link>
           </div>
 

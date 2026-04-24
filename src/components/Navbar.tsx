@@ -29,7 +29,7 @@ const Navbar = () => {
 
   const navItems = [
     { path: "/", label: "Map" },
-    { path: "/blog", label: "Blog" },
+    { path: "/blog", label: "Stories" },
   ];
 
   return (

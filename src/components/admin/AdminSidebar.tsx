@@ -21,7 +21,7 @@ const items: { id: AdminSection; label: string; icon: React.ComponentType<{ clas
   { id: "categories", label: "Categories", icon: Folder },
   { id: "division-info", label: "Division Info", icon: MapPinned },
   { id: "bulk-import", label: "Bulk Import", icon: Upload },
-  { id: "blog", label: "Blog", icon: FileText },
+  { id: "blog", label: "Stories", icon: FileText },
   { id: "fonts", label: "Fonts", icon: Type },
 ];
 

@@ -181,7 +181,7 @@ const BlogBulkImport = ({ onImported }: { onImported?: () => void }) => {
       <div className="flex items-start gap-3">
         <FileSpreadsheet className="h-6 w-6 text-muted-foreground shrink-0 mt-1" />
         <div className="flex-1">
-          <h4 className="font-heading text-base font-semibold text-foreground">Bulk Import Blog Posts</h4>
+          <h4 className="font-heading text-base font-semibold text-foreground">Bulk Import Blog/Story Posts</h4>
           <p className="text-xs text-muted-foreground mt-1">
             Upload <code className="rounded bg-secondary px-1">.csv</code>,{" "}
             <code className="rounded bg-secondary px-1">.xlsx</code>, or{" "}

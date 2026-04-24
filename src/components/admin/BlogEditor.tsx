@@ -183,7 +183,7 @@ const BlogEditor = () => {
 
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between mb-4">
         <h3 className="font-heading text-base sm:text-lg font-semibold text-foreground">
-          Blog Posts ({filteredPosts.length})
+          Blog/Story Posts ({filteredPosts.length})
         </h3>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
           <div className="relative flex-1 sm:flex-initial">
