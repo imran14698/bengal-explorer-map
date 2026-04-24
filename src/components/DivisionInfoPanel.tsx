@@ -12,6 +12,8 @@ import mymensinghImg from "@/assets/divisions/mymensingh.webp";
 import rajshahiImg from "@/assets/divisions/rajshahi.webp";
 import rangpurImg from "@/assets/divisions/rangpur.webp";
 import barisalImg from "@/assets/divisions/barisal.webp";
+import chittagongImg from "@/assets/divisions/chittagong.webp";
+import sylhetImg from "@/assets/divisions/sylhet.webp";
 
 interface DivisionInfoPanelProps {
   divisionId: string | null;
@@ -20,10 +22,10 @@ interface DivisionInfoPanelProps {
 
 const divisionNames: Record<string, { en: string; bn: string }> = {
   dhaka: { en: "Dhaka", bn: "ঢাকা" },
-  chattogram: { en: "Chittagong", bn: "চট্টগ্রাম" },
+  chittagong: { en: "Chittagong", bn: "চট্টগ্রাম" },
   rajshahi: { en: "Rajshahi", bn: "রাজশাহী" },
   khulna: { en: "Khulna", bn: "খুলনা" },
-  barishal: { en: "Barisal", bn: "বরিশাল" },
+  barisal: { en: "Barisal", bn: "বরিশাল" },
   sylhet: { en: "Sylhet", bn: "সিলেট" },
   rangpur: { en: "Rangpur", bn: "রংপুর" },
   mymensingh: { en: "Mymensingh", bn: "ময়মনসিংহ" },
@@ -32,12 +34,13 @@ const divisionNames: Record<string, { en: string; bn: string }> = {
 // Load division images
 const divisionMaps: Record<string, string> = {
   dhaka: dhakaImg,
+  chittagong: chittagongImg,
   khulna: khulnaImg,
   mymensingh: mymensinghImg,
   rajshahi: rajshahiImg,
   rangpur: rangpurImg,
-  barisal: barisalImg,  // divisionShapes uses "barisal" (without 'h')
-  barishal: barisalImg, // support both spellings
+  barisal: barisalImg,
+  sylhet: sylhetImg,
 };
 
 interface CategoryInfo {
@@ -68,8 +71,12 @@ const DivisionInfoPanel = ({ divisionId, onClose }: DivisionInfoPanelProps) => {
   const { lang: globalLang, setLang: setGlobalLang } = useLanguage();
   const [lang, setLang] = useState<Lang>(globalLang);
 
-  // Keep panel lang in sync if global changes
-  useEffect(() => { setLang(globalLang); }, [globalLang]);
+  // Initialize panel lang when division modal opens
+  useEffect(() => { 
+    if (divisionId) {
+      setLang(globalLang);
+    }
+  }, [divisionId]);
 
   useEffect(() => {
     if (!divisionId) {
